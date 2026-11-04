@@ -1,0 +1,43 @@
+---
+/**
+ * Small stroke icons for links and buttons, in place of text arrows (→ ← ↗), which
+ * render long and thin in the site's fonts. Sized in em so they follow the text.
+ * Decorative: the link text carries the meaning.
+ */
+interface Props {
+	name: 'arrow-right' | 'arrow-left' | 'external' | 'download';
+	class?: string;
+}
+const { name, class: className } = Astro.props;
+
+const paths = {
+	'arrow-right': 'M5 12h14M13 6l6 6-6 6',
+	'arrow-left': 'M19 12H5M11 6l-6 6 6 6',
+	external: 'M7 17 17 7M9 7h8v8',
+	download: 'M12 4v11M7 10l5 5 5-5M5 20h14',
+};
+---
+
+<svg
+	class:list={['icon', className]}
+	viewBox="0 0 24 24"
+	width="1em"
+	height="1em"
+	fill="none"
+	stroke="currentColor"
+	stroke-width="2"
+	stroke-linecap="round"
+	stroke-linejoin="round"
+	aria-hidden="true"
+	focusable="false"><path d={paths[name]}></path></svg
+>
+
+<style>
+	.icon {
+		display: inline-block;
+		flex: none;
+		width: 1.05em;
+		height: 1.05em;
+		vertical-align: -0.15em;
+	}
+</style>

@@ -1,0 +1,88 @@
+---
+import { Font } from 'astro:assets';
+import '../styles/global.css';
+import SiteHeader from '../components/SiteHeader.astro';
+import type { Section } from '../lib/nav';
+import SiteFooter from '../components/SiteFooter.astro';
+
+interface Props {
+	title: string;
+	description?: string;
+	/** Path to the social preview image, relative to the site root. */
+	image?: string;
+	lang?: string;
+	/** Highlights the matching menu entry. */
+	current?: Section;
+	/** JSON-LD structured data for this page. */
+	jsonLd?: Record<string, unknown>;
+}
+
+// Share image: public/og.jpg (1200 × 630, logo and «Haciendo que las cosas pasen»).
+const { title, description, image = '/og.jpg', lang = 'es', current, jsonLd } = Astro.props;
+
+// `site` is unset in astro.config.mjs until a project sets it, and absolute URLs
+// cannot be built without it. Metadata that requires one is omitted rather than
+// guessed — see docs/ADR/0003-absolute-url-metadata-requires-a-configured-site.md
+const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
+const imageUrl = Astro.site && image ? new URL(image, Astro.site).href : undefined;
+---
+
+<!doctype html>
+<html lang={lang}>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+		{description && <meta name="description" content={description} />}
+		{canonical && <link rel="canonical" href={canonical} />}
+
+		<meta property="og:title" content={title} />
+		<meta property="og:type" content="website" />
+		<meta property="og:locale" content="es_CL" />
+		{description && <meta property="og:description" content={description} />}
+		{canonical && <meta property="og:url" content={canonical} />}
+		{imageUrl && <meta property="og:image" content={imageUrl} />}
+		{imageUrl && <meta property="og:image:width" content="1200" />}
+		{imageUrl && <meta property="og:image:height" content="630" />}
+		{
+			imageUrl && (
+				<meta
+					property="og:image:alt"
+					content="Logo de Cata Callejas con la frase «Haciendo que las cosas pasen»"
+				/>
+			)
+		}
+		<meta name="twitter:card" content={imageUrl ? 'summary_large_image' : 'summary'} />
+
+		<link rel="icon" type="image/png" sizes="162x162" href="/favicon.png" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+		<Font cssVariable="--font-poppins" preload />
+		<Font cssVariable="--font-jakarta" preload />
+		{jsonLd && <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+	</head>
+	<body>
+		<a class="skip-link" href="#contenido">Saltar al contenido</a>
+		<SiteHeader current={current} />
+		<main id="contenido">
+			<slot />
+		</main>
+		<SiteFooter />
+	</body>
+</html>
+
+<style>
+	.skip-link {
+		position: absolute;
+		left: 1rem;
+		top: -3rem;
+		z-index: 100;
+		padding: 0.5rem 1rem;
+		background: var(--surface);
+		border-radius: var(--radius-sm);
+		box-shadow: var(--shadow);
+	}
+	.skip-link:focus {
+		top: 1rem;
+	}
+</style>

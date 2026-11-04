@@ -1,0 +1,102 @@
+---
+/**
+ * Block under a page title: a divider with a tilted tag, then three columns
+ * (icon, question, answer). Used by Hablando and Artefactos.
+ * `tagUnderEm`: width of the h1's first word in em of the title size; the tag is
+ * centred under it. `icono` is inline SVG on a 32 × 32 grid, drawn with currentColor.
+ */
+interface Props {
+	tag: string;
+	tagUnderEm: number;
+	points: { titulo: string; texto: string; icono: string }[];
+}
+const { tag, tagUnderEm, points } = Astro.props;
+---
+
+<div class="about" style={`--under: ${tagUnderEm}`}>
+	<div class="about__rule" aria-hidden="true">
+		<span class="about__tag">{tag}</span>
+	</div>
+	<ul class="about__cols">
+		{
+			points.map((p) => (
+				<li class="about__item">
+					<svg
+						class="about__icon"
+						viewBox="0 0 32 32"
+						width="32"
+						height="32"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="1.75"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						aria-hidden="true"
+					>
+						<Fragment set:html={p.icono} />
+					</svg>
+					<h2 class="about__title">{p.titulo}</h2>
+					<p class="about__text">{p.texto}</p>
+				</li>
+			))
+		}
+	</ul>
+</div>
+
+<style>
+	/* Intro: divider with a tilted tag, then three columns (icon, question, answer). */
+	.about {
+		margin-top: clamp(2.5rem, 6vw, 4rem);
+	}
+	.about__rule {
+		position: relative;
+		height: 1px;
+		background: var(--line);
+	}
+	.about__tag {
+		position: absolute;
+		top: 50%;
+		/* Centred under the h1's first word: that word is `--under` em of the title's
+		   font size (same clamp as .page-intro__title), so its middle is half of that. */
+		left: calc(clamp(2.75rem, 1.2rem + 6vw, 5.2rem) * var(--under) / 2);
+		padding: 0.55rem 1.25rem;
+		border-radius: 999px;
+		background: var(--surface);
+		box-shadow:
+			0 1px 2px rgb(28 32 48 / 0.06),
+			0 6px 18px rgb(103 84 224 / 0.12);
+		color: var(--violet-ink);
+		font-size: 0.9rem;
+		font-weight: 600;
+		white-space: nowrap;
+		transform: translate(-50%, -50%) rotate(-6deg);
+	}
+	.about__cols {
+		display: grid;
+		gap: 2rem;
+		margin-top: clamp(3rem, 7vw, 4.5rem);
+		padding: 0;
+		list-style: none;
+	}
+	@media (min-width: 800px) {
+		.about__cols {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: clamp(2rem, 5vw, 4rem);
+		}
+	}
+	.about__icon {
+		display: block;
+		color: var(--violet);
+	}
+	.about__title {
+		margin-top: 1.25rem;
+		font-size: 1.2rem;
+		font-weight: 600;
+		letter-spacing: -0.01em;
+	}
+	.about__text {
+		margin-top: 0.6rem;
+		color: var(--ink-muted);
+		line-height: 1.6;
+	}
+</style>

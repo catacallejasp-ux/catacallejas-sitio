@@ -1,0 +1,907 @@
+---
+import Icon from '../../components/Icon.astro';
+import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import JobEntry from '../../components/JobEntry.astro';
+import WorkCard from '../../components/WorkCard.astro';
+import SkillsBento from '../../components/SkillsBento.astro';
+import WorkflowDiagram from '../../components/WorkflowDiagram.astro';
+import DownloadCv from '../../components/DownloadCv.astro';
+import Tag from '../../components/Tag.astro';
+import retrato from '../../assets/cata-ilustracion.png';
+import {
+	perfil,
+	sobreMi,
+	educacion,
+	certificaciones,
+	voluntariados,
+	cvPdf,
+	flujoTrabajo,
+} from '../../data/cv';
+import { personJsonLd } from '../../lib/seo';
+import { getProyectos } from '../../lib/contenido';
+
+const proyectos = await getProyectos();
+const tituloDe = new Map(proyectos.map((p) => [p.id, p.data.title]));
+const trayectoria = (await getCollection('trayectoria')).sort(
+	(a, b) => b.data.order - a.data.order,
+);
+
+/** Icons for the Educación and Certificaciones lists (32 × 32 grid). */
+// graduation cap
+const iconoEducacion =
+	'<path d="m16 6 13 6-13 6-13-6Z"/><path d="M8 14.5V21c0 2 3.6 4 8 4s8-2 8-4v-6.5M29 12v8"/>';
+// award ribbon
+const iconoCertificacion =
+	'<circle cx="16" cy="12" r="7"/><path d="m11.5 17.5-2 10.5 6.5-3.5 6.5 3.5-2-10.5"/><path d="m13.5 12 2 2 3.5-3.5"/>';
+
+const contacto = [
+	{
+		label: 'Escríbeme a',
+		valor: perfil.email,
+		href: `mailto:${perfil.email}`,
+		externo: false,
+		descarga: false,
+		icono: '<rect x="4" y="7" width="24" height="18" rx="2"/><path d="m5 9 11 8 11-8"/>',
+	},
+	{
+		label: 'Sígueme en LinkedIn',
+		valor: 'catalina-callejas',
+		href: perfil.linkedin,
+		externo: true,
+		descarga: false,
+		icono:
+			'<rect x="4" y="4" width="24" height="24" rx="4"/><path d="M10 14v8M10 10v.01M15 22v-8M15 17a3 3 0 0 1 6 0v5"/>',
+	},
+	...(cvPdf
+		? [
+				{
+					label: 'Descarga mi',
+					valor: 'Curriculum Vitae',
+					href: cvPdf.href,
+					externo: false,
+					descarga: true,
+					// document with a download arrow
+					icono:
+						'<path d="M8 4h11l5 5v19H8Z"/><path d="M19 4v5h5"/><path d="M16 13v9M12 18l4 4 4-4"/>',
+				},
+			]
+		: []),
+];
+---
+
+<BaseLayout
+	title={`Sobre mí · ${perfil.nombre}`}
+	description="Sobre Catalina Callejas, Product Designer y Profesora de Castellano de formación: sus proyectos, trayectoria, educación y voluntariados."
+	current="sobre-mi"
+	jsonLd={personJsonLd(Astro.site)}
+>
+	<!-- Intro (always visible) -->
+	<section class="intro">
+		<div class="intro__glow" aria-hidden="true"></div>
+		<div class="container intro__inner">
+			<div>
+				<h1 class="intro__title">Soy <span class="gradient-text">Catalina Callejas</span></h1>
+				<p class="intro__text">{sobreMi.texto}</p>
+				<ul class="chips intro__tags" aria-label="Perfil">
+					{
+						sobreMi.tags.map((t) => (
+							<li>
+								<Tag>{t}</Tag>
+							</li>
+						))
+					}
+				</ul>
+				<div class="intro__actions">
+					<DownloadCv />
+				</div>
+			</div>
+			<div class="intro__photo">
+				<Image
+					src={retrato}
+					alt="Ilustración de Catalina Callejas"
+					width={360}
+					widths={[240, 360, 720]}
+					sizes="(max-width: 900px) 11rem, 360px"
+					loading="eager"
+				/>
+			</div>
+		</div>
+	</section>
+
+	<section class="section section--tinted profile">
+		<div class="container">
+			<!-- Mis proyectos -->
+			<div class="row" id="proyectos">
+				<div class="row__aside">
+					<h2 class="block-title" id="mis-proyectos">Mis proyectos</h2>
+					<p class="row__lead">
+						Proyectos reales en banca, retail, salud y energía, del más reciente al más antiguo.
+						Cada uno abre su propia página con el detalle.
+					</p>
+				</div>
+				<div class="carousel" data-carousel>
+					<ol class="works" data-carousel-track aria-labelledby="mis-proyectos" tabindex="0">
+						{
+							proyectos.map((p, i) => (
+								<li>
+									<WorkCard
+										id={`proyecto-${p.id}`}
+										n={i + 1}
+										title={p.data.title}
+										tags={p.data.roles}
+										href={`/sobre-mi/proyectos/${p.id}`}
+										cover={p.data.cover}
+										coverAlt={p.data.coverAlt}
+										coverFocus={p.data.coverFocus}
+									/>
+								</li>
+							))
+						}
+					</ol>
+					<div class="carousel__controls" data-carousel-controls hidden>
+						<button type="button" class="carousel-btn" data-dir="-1" aria-label="Proyecto anterior">
+							<Icon name="arrow-left" />
+						</button>
+						<div class="carousel__dots" data-carousel-dots></div>
+						<button type="button" class="carousel-btn" data-dir="1" aria-label="Proyecto siguiente">
+							<Icon name="arrow-right" />
+						</button>
+					</div>
+				</div>
+			</div>
+
+			<hr class="rule" />
+
+			<!-- Flujo de trabajo -->
+			<div class="flow-block" id="flujo">
+				<div class="flow-block__head">
+					<h2 class="block-title">Mi flujo de trabajo</h2>
+				</div>
+				<WorkflowDiagram grupos={flujoTrabajo.grupos} ciclo={flujoTrabajo.ciclo} />
+			</div>
+
+			<hr class="rule" />
+
+			<!-- Trayectoria -->
+			<div class="row" id="trayectoria">
+				<div class="row__aside">
+					<h2 class="block-title">Trayectoria</h2>
+					<p class="row__lead">
+						+5 años diseñando productos complejos B2B/SaaS en banca, retail y salud. Cada rol enlaza
+						con sus proyectos.
+					</p>
+					<div class="row__action"><DownloadCv /></div>
+				</div>
+				<ol class="timeline" aria-label="Trayectoria">
+					{
+						trayectoria.map((t) => (
+							<JobEntry
+								period={t.data.periodLabel}
+								company={t.data.company}
+								role={t.data.role}
+								bullets={t.data.bullets}
+								projects={t.data.projects
+									.filter((slug) => tituloDe.has(slug))
+									.map((slug) => ({ slug, title: tituloDe.get(slug)! }))}
+								keyProjects={t.data.keyProjects}
+								clients={t.data.clients}
+								tag={t.data.tag}
+							/>
+						))
+					}
+				</ol>
+			</div>
+
+			<hr class="rule" />
+
+			<!-- Herramientas y especialidades -->
+			<SkillsBento />
+
+			<hr class="rule" />
+
+			<!-- Educación · Certificaciones -->
+			<div class="split split--edu">
+				<div class="split__col">
+					<h2 class="block-title">Educación</h2>
+					<ul class="skills">
+						{
+							educacion.map((e) => (
+								<li class="skill">
+									<svg
+										class="skill__icon"
+										viewBox="0 0 32 32"
+										width="28"
+										height="28"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="1.75"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										aria-hidden="true"
+									>
+										<Fragment set:html={iconoEducacion} />
+									</svg>
+									<div>
+										<h3 class="skill__title">{e.titulo}</h3>
+										<p class="skill__text">
+											{e.lugar}, {e.periodo}
+										</p>
+									</div>
+								</li>
+							))
+						}
+					</ul>
+				</div>
+				<div class="split__col">
+					<h2 class="block-title">Certificaciones</h2>
+					<ul class="skills skills--2col">
+						{
+							certificaciones.map((c) => (
+								<li class="skill">
+									<svg
+										class="skill__icon"
+										viewBox="0 0 32 32"
+										width="28"
+										height="28"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="1.75"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										aria-hidden="true"
+									>
+										<Fragment set:html={iconoCertificacion} />
+									</svg>
+									<div>
+										<h3 class="skill__title">
+											{c.url ? (
+												<a href={c.url} target="_blank" rel="noopener">
+													{c.titulo}
+												</a>
+											) : (
+												c.titulo
+											)}
+										</h3>
+										<p class="skill__text">
+											{c.emisor}
+											{c.anio && ` · ${c.anio}`}
+										</p>
+									</div>
+								</li>
+							))
+						}
+					</ul>
+				</div>
+			</div>
+
+			<hr class="rule" />
+
+			<!-- Voluntariados -->
+			<div class="row" id="voluntariados">
+				<div class="row__aside">
+					<h2 class="block-title">Voluntariados</h2>
+					<p class="row__lead">Comunidad, mentoría y divulgación.</p>
+				</div>
+				<ul class="volunteer">
+					{
+						voluntariados.map((v) => (
+							<li class="volunteer__item">
+								<p class="volunteer__period">{v.periodo}</p>
+								<h3 class="volunteer__title">{v.organizacion}</h3>
+								<p class="volunteer__org">{v.titulo}</p>
+								<p class="volunteer__text">{v.texto}</p>
+								{v.href && (
+									<a class="text-link" href={v.href}>
+										Ver más <Icon name="arrow-right" />
+									</a>
+								)}
+							</li>
+						))
+					}
+				</ul>
+			</div>
+		</div>
+	</section>
+
+	<!-- Conversemos -->
+	<section class="connect" id="trabajemos">
+		<div class="container connect__inner">
+			<div class="connect__intro">
+				<h2 class="connect__title">¿Te interesa que sea parte de tu equipo?</h2>
+			</div>
+			<div class="connect__body">
+				<ul class="contact">
+					{
+						contacto.map((c) => (
+							<li>
+								<a
+									class="contact__item"
+									href={c.href}
+									target={c.externo ? '_blank' : undefined}
+									rel={c.externo ? 'noopener' : undefined}
+									download={c.descarga || undefined}
+								>
+									<svg
+										class="contact__icon"
+										viewBox="0 0 32 32"
+										width="32"
+										height="32"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="1.75"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										aria-hidden="true"
+									>
+										<Fragment set:html={c.icono} />
+									</svg>
+									<span class="contact__text">
+										<span class="contact__label">{c.label}</span>
+										<span class="contact__value">{c.valor}</span>
+									</span>
+									{c.externo && <span class="visually-hidden"> (se abre en otra pestaña)</span>}
+								</a>
+							</li>
+						))
+					}
+				</ul>
+			</div>
+		</div>
+	</section>
+</BaseLayout>
+
+<script>
+	// Carousel: native horizontal scroll with snap, so touch, trackpad and keyboard
+	// (once the track is focused) work without JS. With JS it adds controls under the
+	// track (previous / one dot per card / next) and mouse drag.
+	document.querySelectorAll<HTMLElement>('[data-carousel]').forEach((root) => {
+		const track = root.querySelector<HTMLElement>('[data-carousel-track]')!;
+		const controls = root.querySelector<HTMLElement>('[data-carousel-controls]')!;
+		const dotsBox = root.querySelector<HTMLElement>('[data-carousel-dots]')!;
+		const [prev, next] = controls.querySelectorAll<HTMLButtonElement>('[data-dir]');
+		const cards = [...track.querySelectorAll<HTMLElement>(':scope > li')];
+		const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		const behavior: ScrollBehavior = reduce ? 'auto' : 'smooth';
+		// Scroll position that puts a card at the column edge (the track has side
+		// padding so the cards' shadows aren't clipped).
+		const cardX = (c: HTMLElement) =>
+			c.offsetLeft - track.offsetLeft - parseFloat(getComputedStyle(track).paddingLeft);
+
+		const goTo = (i: number) => {
+			const card = cards[Math.max(0, Math.min(cards.length - 1, i))];
+			track.scrollTo({ left: cardX(card), behavior });
+		};
+		const current = () => {
+			const x = track.scrollLeft;
+			let best = 0;
+			cards.forEach((c, i) => {
+				if (Math.abs(cardX(c) - x) < Math.abs(cardX(cards[best]) - x)) best = i;
+			});
+			return best;
+		};
+
+		const dots = cards.map((card, i) => {
+			const dot = document.createElement('button');
+			dot.type = 'button';
+			dot.className = 'carousel__dot';
+			const title = card.querySelector('h3')?.textContent ?? '';
+			dot.setAttribute('aria-label', `Ir al proyecto ${i + 1}: ${title}`);
+			dot.addEventListener('click', () => goTo(i));
+			dotsBox.append(dot);
+			return dot;
+		});
+
+		const maxScroll = () => track.scrollWidth - track.clientWidth - 2;
+		const atEnd = (x = track.scrollLeft) => x >= maxScroll();
+		// The first card sits a few pixels in (the track's padding), not at 0.
+		const atStart = (x = track.scrollLeft) => x <= cardX(cards[0]) + 2;
+		const update = () => {
+			const at = atEnd() ? cards.length - 1 : current();
+			dots.forEach((d, i) => d.setAttribute('aria-current', i === at ? 'true' : 'false'));
+			controls.hidden = maxScroll() <= 0;
+		};
+		// Infinite: at the end «next» goes back to the first card; at the start
+		// «previous» jumps to the end.
+		const toEnd = () => track.scrollTo({ left: track.scrollWidth, behavior });
+		prev.addEventListener('click', () => (atStart() ? toEnd() : goTo(current() - 1)));
+		next.addEventListener('click', () => (atEnd() ? goTo(0) : goTo(current() + 1)));
+		// Swiping past either end wraps around too.
+		const wrapIfPastEdge = (fromScroll: number, dx: number) => {
+			if (atEnd(fromScroll) && dx < -40) return (goTo(0), true);
+			if (atStart(fromScroll) && dx > 40) return (toEnd(), true);
+			return false;
+		};
+		let touchX = 0;
+		let touchScroll = 0;
+		track.addEventListener(
+			'touchstart',
+			(e) => {
+				touchX = e.touches[0].clientX;
+				touchScroll = track.scrollLeft;
+			},
+			{ passive: true },
+		);
+		track.addEventListener(
+			'touchend',
+			(e) => wrapIfPastEdge(touchScroll, e.changedTouches[0].clientX - touchX),
+			{ passive: true },
+		);
+		track.addEventListener('scroll', update, { passive: true });
+		window.addEventListener('resize', update);
+		update();
+
+		// Mouse drag. Touch and pens already scroll natively. Snapping is paused while
+		// dragging and a drag of more than a few pixels does not count as a click.
+		let startX = 0;
+		let startScroll = 0;
+		let dragging = false;
+		let moved = false;
+		track.addEventListener('pointerdown', (e) => {
+			if (e.pointerType !== 'mouse' || e.button !== 0) return;
+			dragging = true;
+			moved = false;
+			startX = e.clientX;
+			startScroll = track.scrollLeft;
+		});
+		window.addEventListener('pointermove', (e) => {
+			if (!dragging) return;
+			const dx = e.clientX - startX;
+			if (!moved && Math.abs(dx) > 5) {
+				moved = true;
+				track.classList.add('is-dragging');
+			}
+			if (moved) track.scrollLeft = startScroll - dx;
+		});
+		window.addEventListener('pointerup', (e) => {
+			if (!dragging) return;
+			dragging = false;
+			if (moved) {
+				track.classList.remove('is-dragging');
+				if (!wrapIfPastEdge(startScroll, e.clientX - startX)) goTo(current());
+			}
+		});
+		track.addEventListener(
+			'click',
+			(e) => {
+				if (moved) {
+					e.preventDefault();
+					e.stopPropagation();
+					moved = false;
+				}
+			},
+			true,
+		);
+	});
+</script>
+
+<style>
+	.intro {
+		position: relative;
+		overflow-x: clip;
+		padding-block: clamp(2.5rem, 6vw, 4.5rem);
+	}
+	.intro__glow {
+		position: absolute;
+		inset: 0;
+		background: var(--glow);
+		pointer-events: none;
+	}
+	.intro__inner {
+		position: relative;
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: clamp(1.5rem, 4vw, 3.5rem);
+		align-items: center;
+	}
+	@media (min-width: 900px) {
+		.intro__inner {
+			grid-template-columns: 1fr 22rem;
+		}
+	}
+	/* Same as the home hero: the illustration carries its own rounded border, so no
+	   panel behind it, and it sits to the right of the text. */
+	.intro__photo img {
+		display: block;
+		width: auto;
+		height: auto;
+		max-width: 100%;
+		max-height: min(55vh, 26rem);
+		margin-inline: auto;
+	}
+	@media (max-width: 899px) {
+		.intro__photo img {
+			max-height: 11rem;
+		}
+	}
+	.intro__title {
+		font-size: clamp(2.6rem, 1.2rem + 5.5vw, 5rem);
+		font-weight: 700;
+		line-height: 0.98;
+		letter-spacing: -0.045em;
+	}
+	.intro__text {
+		margin-top: 1rem;
+		max-width: 60ch;
+		color: var(--ink-muted);
+		font-size: 1.05rem;
+	}
+	.intro__tags {
+		margin-top: 1.25rem;
+	}
+	.intro__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		margin-top: 1.75rem;
+	}
+
+	/* ——— Profile: aside + content rows, after the reference layout ——— */
+	.profile {
+		display: block;
+		padding-block: clamp(2.5rem, 5vw, 4rem);
+	}
+	.row,
+	.split {
+		display: grid;
+		gap: clamp(1.5rem, 4vw, 2.5rem);
+	}
+	.row + .row {
+		margin-top: clamp(3rem, 7vw, 4.5rem);
+	}
+	@media (min-width: 900px) {
+		.row {
+			grid-template-columns: 16rem minmax(0, 1fr);
+			gap: clamp(2rem, 5vw, 4rem);
+		}
+		.row__aside {
+			position: sticky;
+			top: 6rem;
+			align-self: start;
+		}
+	}
+	.row,
+	[id] {
+		scroll-margin-top: 6rem;
+	}
+	/* Section title with a short accent bar. Sentence case: no all-caps (harder to read). */
+	.block-title {
+		font-size: clamp(1.35rem, 1.15rem + 0.8vw, 1.75rem);
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		line-height: 1.2;
+		color: var(--ink);
+	}
+	.block-title::after {
+		content: '';
+		display: block;
+		width: 2.25rem;
+		height: 3px;
+		margin-top: 0.8rem;
+		border-radius: 3px;
+		background: var(--violet);
+	}
+	.row__lead {
+		margin-top: 1.1rem;
+		color: var(--ink-muted);
+	}
+	.row__action {
+		margin-top: 1.5rem;
+	}
+	.flow-block__head {
+		max-width: 46rem;
+		/* The diagram already leaves room on top for the loop. */
+		margin-bottom: 0.5rem;
+	}
+	/* Space between sections: one rule with ~3rem above and below on desktop. */
+	.rule {
+		margin-block: clamp(2rem, 4.5vw, 3rem);
+		border: 0;
+		border-top: 1px solid var(--line);
+	}
+
+	/* Projects carousel */
+	.carousel {
+		min-width: 0;
+	}
+	.works {
+		display: grid;
+		grid-auto-flow: column;
+		grid-auto-columns: min(82%, 18rem);
+		gap: clamp(1rem, 2vw, 1.5rem);
+		/* The scroll box clips whatever overflows it, shadows included: room on every
+		   side (top for the hover lift, sides and bottom for the shadow), taken back
+		   with negative margins so the cards stay aligned with the column. */
+		--bleed: min(var(--gutter), 1.75rem);
+		margin: -0.75rem calc(-1 * var(--bleed)) 0;
+		padding: 0.75rem var(--bleed) 3.5rem;
+		scroll-padding-inline: var(--bleed);
+		list-style: none;
+		overflow-x: auto;
+		overscroll-behavior-x: contain;
+		scroll-snap-type: x mandatory;
+		scrollbar-width: none;
+		cursor: grab;
+	}
+	.works::-webkit-scrollbar {
+		display: none;
+	}
+	.works > li {
+		scroll-snap-align: start;
+	}
+	.works.is-dragging {
+		scroll-snap-type: none;
+		cursor: grabbing;
+	}
+	.works.is-dragging :global(a) {
+		pointer-events: none;
+	}
+	.works:focus-visible {
+		outline: 3px solid var(--violet);
+		outline-offset: 4px;
+		border-radius: var(--radius-sm);
+	}
+	.carousel__controls {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 1rem;
+		margin-top: -1.75rem;
+	}
+	.carousel__controls[hidden] {
+		display: none;
+	}
+	.carousel__dots {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.15rem;
+	}
+	/* 24px hit area around a small visible dot. */
+	.carousel__dots :global(.carousel__dot) {
+		display: grid;
+		place-items: center;
+		width: 24px;
+		height: 24px;
+		padding: 0;
+		border: 0;
+		background: none;
+		cursor: pointer;
+	}
+	.carousel__dots :global(.carousel__dot)::before {
+		content: '';
+		width: 8px;
+		height: 8px;
+		border-radius: 999px;
+		background: var(--violet-300);
+		transition:
+			width 0.2s ease,
+			background-color 0.2s ease;
+	}
+	.carousel__dots :global(.carousel__dot[aria-current='true'])::before {
+		width: 22px;
+		background: var(--violet);
+	}
+	.carousel__dots :global(.carousel__dot:focus-visible) {
+		outline: 3px solid var(--violet);
+		outline-offset: 1px;
+		border-radius: 999px;
+	}
+	.carousel-btn {
+		display: grid;
+		place-items: center;
+		width: 44px;
+		height: 44px;
+		border: 1px solid var(--violet);
+		border-radius: 999px;
+		background: var(--surface);
+		color: var(--violet-ink);
+		font-size: 1.1rem;
+		cursor: pointer;
+	}
+	.carousel-btn:hover {
+		background: var(--violet);
+		color: #fff;
+	}
+	.carousel-btn:focus-visible {
+		outline: 3px solid var(--violet);
+		outline-offset: 3px;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.carousel__dots :global(.carousel__dot)::before {
+			transition: none;
+		}
+	}
+
+	.timeline {
+		list-style: none;
+		padding: 0;
+		display: grid;
+		gap: 1.5rem;
+	}
+
+	/* Skills | Impact */
+	@media (min-width: 900px) {
+		.split {
+			grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+			gap: 0;
+		}
+		.split__col:first-child {
+			padding-right: clamp(2rem, 4vw, 3.5rem);
+			border-right: 1px solid var(--line);
+		}
+		.split__col:last-child {
+			padding-left: clamp(2rem, 4vw, 3.5rem);
+		}
+		/* Certificaciones is the longer list: wider column, two columns inside. */
+		.split--edu {
+			grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+		}
+	}
+	@media (min-width: 640px) {
+		.skills--2col {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			column-gap: clamp(1.5rem, 3vw, 2.5rem);
+		}
+	}
+	.skills {
+		display: grid;
+		gap: 1.25rem;
+		margin-top: 1.75rem;
+		padding: 0;
+		list-style: none;
+	}
+	.skill {
+		display: flex;
+		gap: 1rem;
+		align-items: flex-start;
+	}
+	.skill__icon {
+		flex: none;
+		color: var(--violet);
+	}
+	.skill__title {
+		font-size: 1rem;
+		font-weight: 600;
+	}
+	.skill__title a {
+		color: inherit;
+		text-decoration-color: var(--violet-300);
+		text-underline-offset: 0.2em;
+	}
+	.skill__title a:hover {
+		color: var(--violet-ink);
+	}
+	.skill__text {
+		margin-top: 0.2rem;
+		font-size: 0.92rem;
+		color: var(--ink-muted);
+	}
+	/* Volunteering */
+	.volunteer {
+		display: grid;
+		gap: clamp(1.5rem, 3vw, 2rem);
+		padding: 0;
+		list-style: none;
+	}
+	@media (min-width: 760px) {
+		.volunteer {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+		}
+	}
+	.volunteer__item {
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+		padding-top: 1rem;
+		border-top: 3px solid var(--teal-300);
+	}
+	.volunteer__period {
+		font-size: 0.9rem;
+		font-weight: 600;
+		letter-spacing: 0.01em;
+		color: var(--ink-muted);
+	}
+	.volunteer__title {
+		font-size: 1.1rem;
+		font-weight: 600;
+	}
+	.volunteer__org {
+		font-size: 0.9rem;
+		color: var(--violet-ink);
+	}
+	.volunteer__text {
+		font-size: 0.92rem;
+		color: var(--ink-muted);
+	}
+
+	/* ——— Connect band: two balanced halves around a centred divider ——— */
+	.connect {
+		padding-block: clamp(3rem, 7vw, 5rem);
+		background: var(--lavender-100);
+	}
+	.connect__inner {
+		display: grid;
+		gap: 2rem;
+	}
+	.connect__title {
+		font-size: clamp(1.9rem, 1.3rem + 2.2vw, 3rem);
+		font-weight: 700;
+		letter-spacing: -0.03em;
+		line-height: 1.08;
+		text-wrap: balance;
+	}
+	@media (min-width: 900px) {
+		.connect__inner {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 0;
+			align-items: center;
+		}
+		/* The title block sits against the divider; its text stays left-aligned. */
+		.connect__intro {
+			display: flex;
+			justify-content: flex-end;
+			padding-right: clamp(2.5rem, 5vw, 4.5rem);
+		}
+		.connect__title {
+			max-width: 14ch;
+		}
+		.connect__body {
+			padding-block: 0.5rem;
+			padding-left: clamp(2.5rem, 5vw, 4.5rem);
+			border-left: 1px solid var(--violet-300);
+		}
+	}
+	.contact {
+		display: grid;
+		gap: 0.75rem;
+		padding: 0;
+		list-style: none;
+	}
+	/* The whole row (icon, label and value) is the link: a target well over 44px. */
+	.contact__item {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		min-height: 56px;
+		padding: 0.35rem 0.5rem;
+		margin-inline: -0.5rem;
+		border-radius: var(--radius-sm);
+		color: inherit;
+		text-decoration: none;
+	}
+	.contact__item:focus-visible {
+		outline: 3px solid var(--violet);
+		outline-offset: 2px;
+	}
+	.contact__icon {
+		flex: none;
+		color: var(--violet);
+	}
+	.contact__text {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		min-width: 0;
+	}
+	/* Label: --ink on --violet-100, 13.7:1. */
+	.contact__label {
+		font-size: 0.95rem;
+		font-weight: 600;
+		color: var(--ink);
+	}
+	/* Value: --violet-700 on --violet-100, 5.95:1. */
+	.contact__value {
+		font-size: clamp(1.1rem, 1rem + 0.35vw, 1.25rem);
+		color: var(--violet-ink);
+		text-decoration: underline;
+		text-decoration-thickness: 1.5px;
+		text-underline-offset: 0.2em;
+		overflow-wrap: anywhere;
+	}
+	.contact__item:hover .contact__value {
+		color: var(--violet-900);
+		text-decoration-thickness: 2.5px;
+	}
+</style>

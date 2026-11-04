@@ -1,0 +1,24 @@
+{
+	"singleQuote": true,
+	"semi": true,
+	"printWidth": 100,
+	"trailingComma": "all",
+	"arrowParens": "always",
+	"useTabs": true,
+	"plugins": ["prettier-plugin-astro"],
+	"overrides": [
+		{
+			"files": "*.astro",
+			"options": { "parser": "astro" }
+		},
+		{
+			"comment": "Spaces, because package managers rewrite package.json with spaces and a tabbed one would fail format:check after every install.",
+			"files": ["*.json", "*.jsonc", "*.yml", "*.yaml"],
+			"options": { "useTabs": false }
+		},
+		{
+			"files": "*.md",
+			"options": { "useTabs": false, "proseWrap": "always" }
+		}
+	]
+}

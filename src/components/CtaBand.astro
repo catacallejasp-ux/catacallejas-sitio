@@ -1,0 +1,105 @@
+---
+interface Props {
+	title: string;
+	text?: string;
+	tone?: 'tinted' | 'plain';
+	/** `centered`: white card, everything stacked and centred, with an optional `icon` slot on top. */
+	layout?: 'row' | 'centered';
+}
+const { title, text, tone = 'tinted', layout = 'row' } = Astro.props;
+const centered = layout === 'centered';
+---
+
+<section class="cta">
+	<div
+		class:list={[
+			'container',
+			'cta__inner',
+			centered ? 'cta__inner--centered' : tone === 'tinted' ? 'cta__inner--violet' : 'cta__inner--lavender',
+		]}
+	>
+		{
+			centered && Astro.slots.has('icon') && (
+				<div class="cta__icon" aria-hidden="true">
+					<slot name="icon" />
+				</div>
+			)
+		}
+		<div>
+			<h2 class="cta__title">{title}</h2>
+			{text && <p class="cta__text">{text}</p>}
+		</div>
+		<div class="cta__actions"><slot /></div>
+	</div>
+</section>
+
+<style>
+	.cta {
+		padding-block: clamp(2rem, 5vw, 3.5rem);
+	}
+	.cta__inner {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1.5rem 3rem;
+		padding: clamp(1.75rem, 5vw, 3rem);
+		border-radius: calc(var(--radius) * 1.25);
+	}
+	.cta__inner--lavender {
+		background: var(--lavender-100);
+	}
+	.cta__inner--violet {
+		background: var(--violet);
+		color: #fff;
+	}
+	.cta__inner--violet .cta__text {
+		color: #fff;
+	}
+	.cta__title {
+		font-size: clamp(1.8rem, 1.3rem + 2vw, 2.8rem);
+		font-weight: 700;
+		letter-spacing: -0.03em;
+		max-width: 22ch;
+	}
+	.cta__text {
+		margin-top: 0.6rem;
+		color: var(--ink-muted);
+	}
+	.cta__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+	}
+
+	/* Centred card */
+	.cta__inner--centered {
+		flex-direction: column;
+		justify-content: center;
+		gap: 1.75rem;
+		padding-block: clamp(3rem, 8vw, 5.5rem);
+		text-align: center;
+		background: var(--surface);
+		border: 1px solid var(--line);
+		border-radius: calc(var(--radius) * 2);
+		box-shadow: 0 10px 40px rgb(103 84 224 / 0.08);
+	}
+	.cta__inner--centered .cta__title {
+		max-width: 18ch;
+		margin-inline: auto;
+		font-size: clamp(2rem, 1.3rem + 2.6vw, 3.2rem);
+		line-height: 1.08;
+	}
+	.cta__inner--centered .cta__actions {
+		justify-content: center;
+	}
+	.cta__icon {
+		display: grid;
+		place-items: center;
+		width: 88px;
+		height: 88px;
+		border-radius: 999px;
+		background: var(--lavender-100);
+		color: var(--violet);
+	}
+</style>

@@ -1,0 +1,71 @@
+---
+/** Top of every inner page: breadcrumb, the page's only h1, lead and shortcut chips. */
+import Breadcrumb from './Breadcrumb.astro';
+
+interface Props {
+	crumb: string;
+	title: string;
+	lead?: string;
+	/** Bottom border separating the intro from the page. */
+	divider?: boolean;
+}
+const { crumb, title, lead, divider = true } = Astro.props;
+---
+
+<header class:list={['page-intro', !divider && 'page-intro--plain']}>
+	<div class="page-intro__glow" aria-hidden="true"></div>
+	<div class="container page-intro__inner">
+		<Breadcrumb items={[{ label: 'Inicio', href: '/' }, { label: crumb }]} />
+		<h1 class="page-intro__title">{title}</h1>
+		{lead && <p class="page-intro__lead">{lead}</p>}
+		<slot name="lead" />
+		<div class="page-intro__chips"><slot /></div>
+	</div>
+</header>
+
+<style>
+	.page-intro {
+		position: relative;
+		/* Clip only sideways: vertical overflow (shadows) stays visible. */
+		overflow-x: clip;
+		padding-block: clamp(2rem, 5vw, 3.5rem) clamp(2.5rem, 5vw, 4rem);
+	}
+	.page-intro__glow {
+		position: absolute;
+		inset: 0;
+		background: var(--glow);
+		pointer-events: none;
+	}
+	.page-intro__inner {
+		position: relative;
+	}
+	.page-intro {
+		background: var(--lavender-50);
+		border-bottom: 1px solid var(--line);
+	}
+	.page-intro--plain {
+		border-bottom: 0;
+	}
+	.page-intro__title {
+		margin-top: 1.25rem;
+		font-size: clamp(2.75rem, 1.2rem + 6vw, 5.2rem);
+		font-weight: 700;
+		line-height: 0.98;
+		letter-spacing: -0.045em;
+	}
+	.page-intro__lead {
+		margin-top: 1rem;
+		max-width: 52ch;
+		font-size: clamp(1.05rem, 1rem + 0.3vw, 1.2rem);
+		color: var(--ink-muted);
+	}
+	.page-intro__chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		margin-top: 1.5rem;
+	}
+	.page-intro__chips:empty {
+		display: none;
+	}
+</style>

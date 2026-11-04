@@ -1,0 +1,8 @@
+---
+interface Props {
+	id: string;
+}
+const { id } = Astro.props;
+---
+
+<section id={id} aria-labelledby={`tab-${id}`} tabindex="-1" data-panel><slot /></section>

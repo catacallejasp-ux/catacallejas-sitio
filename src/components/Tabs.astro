@@ -1,0 +1,151 @@
+---
+/**
+ * Progressive tabs. Without JS the tab list stays hidden and every panel shows in
+ * sequence. With JS: role=tablist, ←/→/Home/End, state in the URL hash (#id), and
+ * any hash that points inside a panel (e.g. #proyecto-achs) opens that panel.
+ * Panels are <TabPanel id> children, ids must match `tabs[].id`.
+ */
+interface Props {
+	tabs: { id: string; label: string }[];
+	initial?: string;
+	label: string;
+	align?: 'start' | 'center';
+}
+const { tabs, initial = tabs[0]?.id, label, align = 'start' } = Astro.props;
+---
+
+<div class="tabs" data-tabs data-initial={initial}>
+	<div
+		class:list={['tabs__list', align === 'center' && 'tabs__list--center']}
+		role="tablist"
+		aria-label={label}
+		hidden
+	>
+		{
+			tabs.map((t) => (
+				<button
+					class="tabs__tab"
+					type="button"
+					role="tab"
+					id={`tab-${t.id}`}
+					aria-controls={t.id}
+					aria-selected={t.id === initial ? 'true' : 'false'}
+					tabindex={t.id === initial ? 0 : -1}
+					data-tab={t.id}
+				>
+					{t.label}
+				</button>
+			))
+		}
+	</div>
+	<slot />
+</div>
+
+<script>
+	const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+	document.querySelectorAll<HTMLElement>('[data-tabs]').forEach((root) => {
+		const list = root.querySelector<HTMLElement>('[role="tablist"]')!;
+		const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+		const panels = tabs.map((t) => document.getElementById(t.dataset.tab!)!);
+		list.hidden = false;
+		root.classList.add('is-enhanced');
+		panels.forEach((p) => p.setAttribute('role', 'tabpanel'));
+
+		const activate = (id: string, { focusPanel = false, updateHash = true } = {}) => {
+			tabs.forEach((t, i) => {
+				const on = t.dataset.tab === id;
+				t.setAttribute('aria-selected', String(on));
+				t.tabIndex = on ? 0 : -1;
+				panels[i].hidden = !on;
+			});
+			if (updateHash) history.replaceState(null, '', `#${id}`);
+			if (focusPanel) document.getElementById(id)?.focus({ preventScroll: true });
+		};
+
+		// Which panel does a hash belong to? The panel itself or an element inside it.
+		const panelForHash = (hash: string) => {
+			const target = hash && document.getElementById(decodeURIComponent(hash.slice(1)));
+			if (!target) return undefined;
+			return panels.find((p) => p === target || p.contains(target));
+		};
+
+		const openFromHash = (scroll: boolean) => {
+			const panel = panelForHash(location.hash);
+			if (!panel) return false;
+			activate(panel.id, { updateHash: false });
+			const target = document.getElementById(decodeURIComponent(location.hash.slice(1)))!;
+			if (target !== panel) {
+				target.classList.add('is-highlighted');
+				setTimeout(() => target.classList.remove('is-highlighted'), 2400);
+			}
+			if (scroll) target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+			return true;
+		};
+
+		if (!openFromHash(true)) activate(root.dataset.initial!, { updateHash: false });
+		window.addEventListener('hashchange', () => openFromHash(true));
+
+		tabs.forEach((tab, i) => {
+			tab.addEventListener('click', () => activate(tab.dataset.tab!));
+			tab.addEventListener('keydown', (e) => {
+				let next = -1;
+				if (e.key === 'ArrowRight') next = (i + 1) % tabs.length;
+				else if (e.key === 'ArrowLeft') next = (i - 1 + tabs.length) % tabs.length;
+				else if (e.key === 'Home') next = 0;
+				else if (e.key === 'End') next = tabs.length - 1;
+				if (next < 0) return;
+				e.preventDefault();
+				tabs[next].focus();
+				activate(tabs[next].dataset.tab!, { focusPanel: false });
+			});
+		});
+	});
+</script>
+
+<style>
+	.tabs__list {
+		display: flex;
+		gap: 0.5rem;
+		padding: 0.4rem;
+		margin-bottom: clamp(2rem, 5vw, 3rem);
+		border-radius: 999px;
+		background: var(--surface);
+		border: 1px solid var(--line);
+		width: fit-content;
+		max-width: 100%;
+	}
+	.tabs__list--center {
+		margin-inline: auto;
+	}
+	.tabs__tab {
+		min-height: 44px;
+		padding: 0 clamp(0.9rem, 3vw, 1.5rem);
+		white-space: nowrap;
+		border: 0;
+		border-radius: 999px;
+		background: transparent;
+		color: var(--ink);
+		font-weight: 500;
+		cursor: pointer;
+	}
+	.tabs__tab:hover {
+		color: var(--violet-ink);
+	}
+	.tabs__tab[aria-selected='true'] {
+		background: var(--violet-600);
+		color: #fff;
+	}
+	/* Without JS every panel shows; keep space between them. */
+	.tabs:not(.is-enhanced) > :global([data-panel] + [data-panel]) {
+		margin-top: clamp(3rem, 7vw, 5rem);
+	}
+	.tabs :global([role='tabpanel']:focus) {
+		outline: none;
+	}
+	.tabs :global(.is-highlighted) {
+		outline: 3px solid var(--violet);
+		outline-offset: 4px;
+		border-radius: var(--radius);
+	}
+</style>

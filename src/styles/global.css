@@ -1,0 +1,462 @@
+@import './reset.css';
+
+/*
+	Visual system v3 (nov 2026). Built from the two brand colours of the portfolio
+	cover — violet #7B66FF and teal #30BACC — with lighter/darker steps of each, plus
+	cool greys as neutrals. No black surfaces: "dark" means deep violet.
+	Type: Poppins (primary: headings, buttons, navigation) + Plus Jakarta Sans
+	(secondary: body text). Light-only, so `color-scheme` stays unset.
+
+	Contrast (WCAG 2.x):
+	  white on --violet-600 5.36 (buttons) · white on --violet-800 9.34 (deep surfaces)
+	  --violet-700 on white 7.02 (links, small accents) · --violet-500 on white 4.05 →
+	  large text only (≥ 24px, e.g. the highlighted name) · --teal-800 on --teal-100 5.7
+	  --neutral-600 on white 6.78 (secondary text) · --neutral-900 on white 16.2
+	  --teal-200 on --violet-800 7.14 · --violet-100 on --violet-800 7.92
+*/
+:root {
+	/* Violet, base #7B66FF = 500 */
+	--violet-50: #f6f4ff;
+	--violet-100: #edeaff;
+	--violet-200: #dad4ff;
+	--violet-300: #baafff;
+	--violet-400: #9888ff;
+	--violet-500: #7b66ff;
+	--violet-600: #6754e0;
+	--violet-700: #5444c3;
+	--violet-800: #4133a6;
+	--violet-900: #31248d;
+
+	/* Teal, base #30BACC = 500 */
+	--teal-50: #eef9fb;
+	--teal-100: #def4f7;
+	--teal-200: #bde9ef;
+	--teal-300: #87d7e1;
+	--teal-400: #55c6d5;
+	--teal-500: #30bacc;
+	--teal-600: #269aaa;
+	--teal-700: #1d808f;
+	--teal-800: #156774;
+	--teal-900: #0e515c;
+
+	/* Neutrals: cool greys */
+	--neutral-0: #ffffff;
+	--neutral-50: #f7f8fb;
+	--neutral-100: #eff1f6;
+	--neutral-200: #e1e4ec;
+	--neutral-300: #c8cdd9;
+	--neutral-400: #9aa1b2;
+	--neutral-500: #6f7689;
+	--neutral-600: #545b6e;
+	--neutral-700: #3e4456;
+	--neutral-800: #2b3040;
+	--neutral-900: #1c2030;
+
+	/* Semantic roles */
+	--ink: var(--neutral-900); /* headings and body text */
+	--ink-muted: var(--neutral-600);
+	--bg: var(--neutral-50);
+	--surface: var(--neutral-0);
+	--line: var(--neutral-200);
+	--surface-deep: var(--violet-800); /* replaces black panels */
+	--surface-deep-2: var(--violet-900);
+	--on-deep: #fff;
+	--on-deep-muted: var(--violet-100);
+	--on-deep-accent: var(--teal-200);
+	--line-dark: var(--violet-700);
+	--violet: var(--violet-600); /* primary fill */
+	--violet-ink: var(--violet-700); /* violet text on light surfaces */
+
+	/* Legacy names, mapped onto the new scales. */
+	--lavender-50: var(--violet-50);
+	--lavender-100: var(--violet-100);
+	--lavender-200: var(--violet-200);
+	--lavender-300: var(--teal-200);
+	--lilac-soft: var(--violet-100);
+	--teal: var(--teal-500);
+	--teal-soft: var(--teal-100);
+	--ink-soft: var(--surface-deep-2);
+	--gradient: var(--violet-500);
+	--gradient-deep: var(--surface-deep);
+	--glow: radial-gradient(70% 90% at 100% 0%, rgb(48 186 204 / 0.12), transparent 70%);
+
+	--font-display: var(--font-poppins), system-ui, sans-serif;
+	--font-sans: var(--font-jakarta), system-ui, sans-serif;
+
+	--radius: 24px;
+	--radius-sm: 14px;
+	--shadow: none;
+
+	--gutter: clamp(1rem, 4vw, 2.5rem);
+	--max: 74rem;
+}
+
+html {
+	scroll-behavior: smooth;
+	scroll-padding-top: 5rem;
+}
+
+/* Footer banner sits at the bottom even on short pages. */
+body {
+	min-height: 100dvh;
+	display: flex;
+	flex-direction: column;
+}
+body > main {
+	flex: 1;
+}
+
+body {
+	font-family: var(--font-sans);
+	color: var(--ink);
+	background: var(--bg);
+	font-size: 1.0625rem;
+	line-height: 1.65;
+}
+
+h1,
+h2,
+h3,
+h4,
+.button,
+.chip-link,
+.eyebrow {
+	font-family: var(--font-display);
+}
+
+h1,
+h2,
+h3,
+h4 {
+	line-height: 1.1;
+	font-weight: 600;
+	letter-spacing: -0.02em;
+}
+
+a {
+	color: var(--violet-ink);
+	text-underline-offset: 0.18em;
+}
+
+:focus-visible {
+	outline: 3px solid var(--violet-600);
+	outline-offset: 3px;
+	border-radius: 6px;
+}
+
+::selection {
+	background: var(--teal-200);
+}
+
+/* Layout helpers */
+.container {
+	width: min(100% - 2 * var(--gutter), var(--max));
+	margin-inline: auto;
+}
+
+.section {
+	padding-block: clamp(4rem, 9vw, 7rem);
+}
+
+.eyebrow {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-size: 0.9rem;
+	font-weight: 600;
+	letter-spacing: 0.01em;
+	color: var(--violet-ink);
+	margin-bottom: 0.9rem;
+}
+.eyebrow::before {
+	content: '';
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: 50%;
+	background: var(--teal-500);
+}
+
+.section-title {
+	font-size: clamp(2rem, 1.3rem + 2.6vw, 3.2rem);
+	font-weight: 700;
+	letter-spacing: -0.03em;
+	max-width: 20ch;
+}
+
+/* Kept for markup compatibility. Highlighted words use the brand violet; they are
+   always large text, where #7B66FF passes AA (4.05:1, ≥ 3:1 required). */
+.gradient-text {
+	color: var(--violet-500);
+}
+
+.chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+	padding: 0;
+	list-style: none;
+}
+
+.chip {
+	display: inline-block;
+	font-size: 0.9rem;
+	font-weight: 500;
+	padding: 0.25rem 0.75rem;
+	border-radius: 999px;
+	background: var(--violet-100);
+	color: var(--violet-700);
+}
+
+.chip--teal {
+	background: var(--teal-100);
+	color: var(--teal-800);
+}
+
+/* ------------------------------------------------------------------
+	Buttons. Primary = solid fill, no border, no gradient, no shadow.
+	Secondary (ghost) = border only. Both pill-shaped, ≥ 44px tall.
+------------------------------------------------------------------ */
+.button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.6rem;
+	min-height: 48px;
+	padding: 0.75rem 1.5rem;
+	border: 0;
+	border-radius: 999px;
+	font-weight: 500;
+	line-height: 1.2;
+	text-decoration: none;
+	transition:
+		background-color 0.15s ease,
+		color 0.15s ease;
+}
+
+.button--primary {
+	background: var(--violet-600);
+	color: #fff;
+}
+.button--primary:hover {
+	background: var(--violet-700);
+}
+
+/* Secondary: border and text only, never a fill (also on hover: the border thickens
+   and darkens instead). */
+.button--ghost {
+	background: transparent;
+	color: var(--violet-700);
+	box-shadow: inset 0 0 0 1.5px var(--violet-600);
+	transition:
+		box-shadow 0.15s ease,
+		color 0.15s ease;
+}
+.button--ghost:hover {
+	background: transparent;
+	color: var(--violet-800);
+	box-shadow: inset 0 0 0 2.5px var(--violet-700);
+}
+
+/* For deep-violet surfaces. */
+.button--light {
+	background: #fff;
+	color: var(--violet-800);
+}
+.button--light:hover {
+	background: var(--teal-100);
+}
+
+.button--sm {
+	min-height: 44px;
+	padding: 0.55rem 1.1rem;
+	font-size: 0.92rem;
+}
+
+/* Arrow badge inside a primary button (moodboard detail). */
+.button__arrow {
+	display: grid;
+	place-items: center;
+	width: 1.9rem;
+	height: 1.9rem;
+	margin-right: -0.9rem;
+	border-radius: 50%;
+	background: #fff;
+	color: var(--violet-700);
+	font-size: 0.95rem;
+}
+
+.visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
+	*,
+	*::before,
+	*::after {
+		transition-duration: 0.01ms !important;
+		animation: none !important;
+	}
+}
+
+/* ------------------------------------------------------------------
+	Shared pieces used by many components.
+------------------------------------------------------------------ */
+
+.muted {
+	color: var(--ink-muted);
+}
+
+.card {
+	background: var(--surface);
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	padding: clamp(1.25rem, 3vw, 2rem);
+}
+
+.card--lavender {
+	background: var(--lavender-100);
+	border-color: transparent;
+}
+
+.card--teal {
+	background: var(--teal-100);
+	border-color: transparent;
+}
+
+.card--dark {
+	background: var(--surface-deep);
+	border-color: transparent;
+	color: var(--on-deep);
+}
+.card--dark .muted {
+	color: var(--on-deep-muted);
+}
+
+.section--tinted {
+	background: var(--violet-50);
+}
+
+/* First section right under a PageIntro without divider: a full section gap there
+   reads as empty space. Shared by Hablando and Artefactos so both start at the same height. */
+.section--after-intro {
+	padding-top: clamp(1rem, 3vw, 2rem);
+}
+
+.section--teal {
+	background: var(--teal-50);
+}
+
+/* "Dark" sections are deep violet, never black. */
+.section--dark {
+	background: var(--surface-deep);
+	color: var(--on-deep);
+}
+.section--dark .eyebrow,
+.section--dark a:not(.button) {
+	color: var(--on-deep-accent);
+}
+.section--dark .eyebrow::before {
+	background: var(--teal-300);
+}
+.section--dark .muted,
+.section--dark .section-lead {
+	color: var(--on-deep-muted);
+}
+
+.grid {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--min, 18rem)), 1fr));
+}
+
+.grid--3 {
+	grid-template-columns: 1fr;
+}
+@media (min-width: 600px) {
+	.grid--3 {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+@media (min-width: 900px) {
+	.grid--3 {
+		grid-template-columns: repeat(3, 1fr);
+	}
+}
+
+.grid--2 {
+	grid-template-columns: 1fr;
+}
+@media (min-width: 900px) {
+	.grid--2 {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+/* Interactive chip: a link that looks like a chip, with a 44px touch target. */
+.chip-link {
+	display: inline-flex;
+	align-items: center;
+	min-height: 44px;
+	padding: 0 1.1rem;
+	border-radius: 999px;
+	background: var(--violet-100);
+	color: var(--violet-700);
+	font-size: 0.92rem;
+	font-weight: 500;
+	text-decoration: none;
+	transition:
+		background-color 0.15s ease,
+		color 0.15s ease;
+}
+.chip-link:hover,
+.chip-link[aria-current='true'] {
+	background: var(--violet-600);
+	color: #fff;
+}
+
+/* Tertiary action (text + icon): same size everywhere, never below body text. */
+.text-link {
+	display: inline-flex;
+	align-items: center;
+	/* inline-flex drops the space before an icon; the gap puts it back. */
+	gap: 0.35em;
+	min-height: 44px;
+	font-size: clamp(1rem, 0.96rem + 0.2vw, 1.1rem);
+	font-weight: 600;
+	text-decoration: none;
+}
+.text-link:hover {
+	text-decoration: underline;
+}
+
+/* Visible marker for content the author still has to provide (TODO(content)). */
+.pending {
+	display: inline-block;
+	padding: 0.35rem 0.75rem;
+	border: 1.5px dashed var(--neutral-400);
+	border-radius: var(--radius-sm);
+	color: var(--ink-muted);
+	font-size: 0.9rem;
+	background: rgb(255 255 255 / 0.7);
+}
+
+.section-lead {
+	margin-top: 1rem;
+	color: var(--ink-muted);
+	max-width: 58ch;
+	font-size: 1.1rem;
+}
+
+hr.divider {
+	border: 0;
+	border-top: 1px solid var(--line);
+	margin-block: clamp(2.5rem, 6vw, 4rem);
+}

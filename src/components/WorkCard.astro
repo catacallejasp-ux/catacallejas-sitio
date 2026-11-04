@@ -1,0 +1,225 @@
+---
+/**
+ * Project card (About page carousel), after the glass-card reference: the cover fills
+ * the whole card and a frosted-glass panel rises over its lower part, so the photo
+ * shows through, blurred, behind the number, title, role tags and «Leer caso».
+ * The whole card is one link; «Leer caso» is styled as a secondary button inside it.
+ * Contrast: dark text on thin white glass over a blurred, brightened photo.
+ */
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+import Pending from './Pending.astro';
+
+interface Props {
+	n: number;
+	title: string;
+	tags?: string[];
+	href: string;
+	cover?: ImageMetadata;
+	coverAlt?: string;
+	/** CSS object-position for the cover, so the person or action stays in view. */
+	coverFocus?: string;
+	id?: string;
+}
+const { n, title, tags = [], href, cover, coverAlt, coverFocus = '50% 50%', id } = Astro.props;
+---
+
+<a class="work" href={href} id={id} draggable="false">
+	{
+		cover && (
+			<div class="work__backdrop" aria-hidden="true">
+				<Image src={cover} alt="" widths={[600]} sizes="600px" loading="lazy" />
+			</div>
+		)
+	}
+	<div class="work__media" style={`--focus: ${coverFocus}`}>
+		{
+			cover ? (
+				<Image
+					src={cover}
+					alt={coverAlt ?? ''}
+					widths={[600, 900, 1300]}
+					sizes="(max-width: 560px) 130vw, 640px"
+					loading="lazy"
+				/>
+			) : (
+				/* TODO(content): portada — while missing, a placeholder shows. */
+				<Pending label={`portada de ${title}`} block />
+			)
+		}
+	</div>
+	<div class="work__glass">
+		<p class="work__n" aria-hidden="true">{String(n).padStart(2, '0')}</p>
+		<h3 class="work__title">{title}</h3>
+		{
+			tags.length > 0 && (
+				<ul class="work__tags" aria-label="Roles">
+					{tags.map((t) => (
+						<li>{t}</li>
+					))}
+				</ul>
+			)
+		}
+		<span class="button button--ghost button--sm work__cta">Leer caso</span>
+	</div>
+</a>
+
+<style>
+	.work {
+		position: relative;
+		isolation: isolate;
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-end;
+		height: 100%;
+		min-height: 27rem;
+		overflow: hidden;
+		border-radius: calc(var(--radius) * 1.6);
+		background: var(--violet-100);
+		color: var(--ink);
+		text-decoration: none;
+		box-shadow: 0 24px 44px -26px rgb(65 51 166 / 0.55);
+		scroll-margin-top: 6rem;
+		-webkit-user-drag: none;
+		user-select: none;
+		transition:
+			transform 0.25s ease,
+			box-shadow 0.25s ease;
+	}
+	.work:hover {
+		transform: translateY(-4px);
+		box-shadow: 0 30px 50px -26px rgb(65 51 166 / 0.65);
+	}
+	.work:focus-visible {
+		outline: 3px solid var(--violet);
+		outline-offset: 4px;
+	}
+
+	/* The photo, whole, in the clear upper part of the card: its box ends 6rem under
+	   the glass and fades out there, so the subject sits above the glass. */
+	.work__media {
+		position: absolute;
+		inset: 0 0 auto;
+		height: calc(100% - 16.5rem + 6rem);
+		z-index: -1;
+		-webkit-mask-image: linear-gradient(180deg, #000 72%, transparent);
+		mask-image: linear-gradient(180deg, #000 72%, transparent);
+	}
+	/* The same photo, blurred and filling the card, behind the glass. */
+	.work__backdrop {
+		position: absolute;
+		inset: 0;
+		z-index: -2;
+		overflow: hidden;
+	}
+	.work__backdrop :global(img) {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		filter: blur(18px) saturate(1.2);
+		transform: scale(1.2);
+	}
+	.work__media :global(img) {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: var(--focus);
+		-webkit-user-drag: none;
+		pointer-events: none;
+		transition: transform 0.5s ease;
+	}
+	.work:hover .work__media :global(img) {
+		transform: scale(1.04);
+	}
+	.work__media :global(.pending) {
+		height: 62%;
+		border: 0;
+		background: transparent;
+	}
+
+	/* Frosted panel across the lower part of the photo, full width with large rounded
+	   top corners and a soft highlight, so it reads as glass laid on the image. */
+	.work__glass {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.55rem;
+		/* Same height on every card, whatever the title or number of tags (fits a
+		   two-line title and two rows of tags). */
+		height: 16.5rem;
+		padding: 1.3rem 1.1rem 1.2rem;
+		text-align: left;
+		border-radius: calc(var(--radius) * 1.6) calc(var(--radius) * 1.6) 0 0;
+		border-top: 1px solid rgb(255 255 255 / 0.6);
+		/* Thin glass: the blurred photo shows through at the top; it frosts towards the
+		   bottom, where the button sits, so its text keeps AA contrast on any photo. */
+		background: linear-gradient(
+			180deg,
+			rgb(255 255 255 / 0.32) 0%,
+			rgb(255 255 255 / 0.5) 45%,
+			rgb(255 255 255 / 0.78) 100%
+		);
+		box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.7);
+		-webkit-backdrop-filter: blur(12px) saturate(160%) brightness(1.08);
+		backdrop-filter: blur(12px) saturate(160%) brightness(1.08);
+	}
+	@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+		.work__glass {
+			background: rgb(255 255 255 / 0.94);
+		}
+	}
+	.work__n {
+		font-family: var(--font-display);
+		font-size: 0.9rem;
+		font-weight: 700;
+		color: var(--violet-900);
+	}
+	.work__title {
+		font-size: 1.3rem;
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		line-height: 1.15;
+		text-wrap: balance;
+	}
+	.work__tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+		padding: 0;
+		list-style: none;
+	}
+	/* Tags are small squared labels, not pills, so they don't read as buttons. */
+	.work__tags li {
+		padding: 0.2rem 0.5rem;
+		border-radius: 6px;
+		background: rgb(255 255 255 / 0.7);
+		color: var(--violet-900);
+		font-size: 0.9rem;
+		font-weight: 500;
+	}
+	/* Darker than the default secondary button: it sits on glass, not on a flat
+	   surface. --violet-900 on the frosted bottom of the panel stays above 4.5:1. */
+	.work__cta {
+		align-self: flex-end;
+		margin-top: auto;
+		color: var(--violet-900);
+		font-weight: 600;
+		box-shadow: inset 0 0 0 1.5px var(--violet-900);
+	}
+	/* The whole card is the link: show the secondary button's hover on card hover. */
+	.work:hover .work__cta {
+		color: var(--violet-900);
+		box-shadow: inset 0 0 0 2.5px var(--violet-900);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.work,
+		.work__media :global(img) {
+			transition: none;
+		}
+		.work:hover,
+		.work:hover .work__media :global(img) {
+			transform: none;
+		}
+	}
+</style>

@@ -1,0 +1,386 @@
+---
+/**
+ * «Flujo de trabajo» as a simple process-flow diagram (after a flow-diagram
+ * reference): number and title per step, three framed groups of two steps, joined by arrow connectors, plus a
+ * loop from «Probar y medir» back to «Prototipar con IA».
+ *
+ * Steps are a real ordered list; the connectors are a decorative SVG drawn by JS from
+ * the cards' positions (redrawn on resize), so the layout can reflow freely: three
+ * columns on desktop, one on phones. When the diagram scrolls into view the cards and
+ * arrows appear one after the other; with prefers-reduced-motion everything shows at
+ * once, and without JS the steps show with no connectors.
+ */
+interface Paso {
+	titulo: string;
+	texto?: string;
+}
+interface Props {
+	grupos: { nombre: string; tono: 'teal' | 'violet' | 'sky'; pasos: Paso[] }[];
+	/** Accessible description of the loop (it is drawn, so it must also be said). */
+	ciclo: { desde: number; hasta: number; etiqueta: string };
+}
+const { grupos, ciclo } = Astro.props;
+
+let n = 0;
+const numerados = grupos.map((g) => ({ ...g, pasos: g.pasos.map((p) => ({ ...p, n: ++n })) }));
+const nombre = (i: number) => numerados.flatMap((g) => g.pasos).find((p) => p.n === i)?.titulo;
+---
+
+<div class="flow" data-flow data-loop-from={ciclo.desde} data-loop-to={ciclo.hasta}>
+	<svg class="flow__lines" aria-hidden="true" focusable="false">
+		<defs>
+			<marker
+				id="flow-arrow"
+				viewBox="0 0 10 10"
+				refX="8"
+				refY="5"
+				markerWidth="7"
+				markerHeight="7"
+				orient="auto-start-reverse"
+			>
+				<path d="M1 1 9 5 1 9" fill="none" stroke="currentColor" stroke-width="1.8"></path>
+			</marker>
+		</defs>
+	</svg>
+	<span class="flow__loop-label" aria-hidden="true">{ciclo.etiqueta}</span>
+
+	<ol class="flow__groups">
+		{
+			numerados.map((g) => (
+				<li class:list={['flow__group', `flow__group--${g.tono}`]}>
+					<p class="flow__group-name">{g.nombre}</p>
+					<ol class="flow__steps">
+						{g.pasos.map((p) => (
+							<li class="flow__step" data-step={p.n} style={`--i: ${p.n}`}>
+								<span class="flow__n" aria-hidden="true">
+									{String(p.n).padStart(2, '0')}
+								</span>
+								<h3 class="flow__title">
+									<span class="visually-hidden">Paso {p.n}: </span>
+									{p.titulo}
+								</h3>
+							</li>
+						))}
+					</ol>
+				</li>
+			))
+		}
+	</ol>
+	<p class="visually-hidden">
+		El proceso se itera: después de «{nombre(ciclo.desde)}» se vuelve a «{nombre(ciclo.hasta)}».
+	</p>
+</div>
+
+<script>
+	const NS = 'http://www.w3.org/2000/svg';
+
+	document.querySelectorAll<HTMLElement>('[data-flow]').forEach((root) => {
+		const svg = root.querySelector<SVGSVGElement>('.flow__lines')!;
+		const label = root.querySelector<HTMLElement>('.flow__loop-label')!;
+		const steps = [...root.querySelectorAll<HTMLElement>('[data-step]')];
+		const from = Number(root.dataset.loopFrom);
+		const to = Number(root.dataset.loopTo);
+		const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		root.classList.add('is-enhanced');
+
+		const box = (el: HTMLElement) => {
+			const r = el.getBoundingClientRect();
+			const o = root.getBoundingClientRect();
+			return {
+				l: r.left - o.left,
+				r: r.right - o.left,
+				t: r.top - o.top,
+				b: r.bottom - o.top,
+				cx: (r.left + r.right) / 2 - o.left,
+				cy: (r.top + r.bottom) / 2 - o.top,
+			};
+		};
+
+		const draw = () => {
+			svg.querySelectorAll('path.flow__path').forEach((p) => p.remove());
+			const o = root.getBoundingClientRect();
+			svg.setAttribute('viewBox', `0 0 ${o.width} ${o.height}`);
+			svg.setAttribute('width', String(o.width));
+			svg.setAttribute('height', String(o.height));
+
+			const paths: { d: string; order: number; loop?: boolean }[] = [];
+			const r = 12; // corner radius of elbows
+			for (let i = 0; i < steps.length - 1; i++) {
+				const a = box(steps[i]);
+				const b = box(steps[i + 1]);
+				if (b.t >= a.b - 1 && Math.abs(a.cx - b.cx) < 40) {
+					// Straight down (same column).
+					// Between two groups the line would cross the next group's name (left
+					// side), so it runs down the right part of the cards instead.
+					const sameGroup =
+						steps[i].closest('.flow__group') === steps[i + 1].closest('.flow__group');
+					const x = sameGroup ? a.cx : a.l + (a.r - a.l) * 0.8;
+					paths.push({ d: `M${x} ${a.b + 4} V${b.t - 6}`, order: i + 1 });
+				} else {
+					// Elbow: out of the right side, across the gap, up/down, into the left side.
+					const midX = (a.r + b.l) / 2;
+					const y1 = a.cy + (a.b - a.t) * 0.2;
+					const y2 = b.cy + (b.b - b.t) * 0.2;
+					const dir = y2 < y1 ? -1 : 1;
+					paths.push({
+						d: `M${a.r + 4} ${y1} H${midX - r} Q${midX} ${y1} ${midX} ${y1 + dir * r} V${y2 - dir * r} Q${midX} ${y2} ${midX + r} ${y2} H${b.l - 6}`,
+						order: i + 1,
+					});
+				}
+			}
+
+			// Loop back: from «from» to «to».
+			const a = box(steps[from - 1]);
+			const b = box(steps[to - 1]);
+			let lx: number;
+			let ly: number;
+			if (Math.abs(a.cx - b.cx) < 40) {
+				// One column: around the right edge, upwards.
+				// Lane between the cards and the panel edge (the groups leave room for it).
+				const panelR = o.width - parseFloat(getComputedStyle(root).paddingRight) / 2;
+				const x = Math.min(panelR, a.r + 22);
+				const ya = a.cy - (a.b - a.t) * 0.15;
+				const yb = b.cy - (b.b - b.t) * 0.15;
+				paths.push({
+					d: `M${a.r + 4} ${ya} H${x - r} Q${x} ${ya} ${x} ${ya - r} V${yb + r} Q${x} ${yb} ${x - r} ${yb} H${b.r + 6}`,
+					order: steps.length,
+					loop: true,
+				});
+				lx = x;
+				ly = (ya + yb) / 2;
+			} else {
+				// Side by side: up out of «from», over the groups' top edge, down into «to».
+				const groupTop = (el: HTMLElement) => box(el.closest<HTMLElement>('.flow__group')!).t;
+				const y = Math.min(groupTop(steps[from - 1]), groupTop(steps[to - 1])) - 16;
+				const dir = b.cx < a.cx ? -1 : 1;
+				paths.push({
+					d: `M${a.cx} ${a.t - 4} V${y + r} Q${a.cx} ${y} ${a.cx + dir * r} ${y} H${b.cx - dir * r} Q${b.cx} ${y} ${b.cx} ${y + r} V${b.t - 6}`,
+					order: steps.length,
+					loop: true,
+				});
+				lx = (a.cx + b.cx) / 2;
+				ly = y;
+			}
+			label.style.left = `${lx}px`;
+			label.style.top = `${ly}px`;
+
+			for (const p of paths) {
+				const el = document.createElementNS(NS, 'path');
+				el.setAttribute('d', p.d);
+				el.setAttribute('class', `flow__path${p.loop ? ' flow__path--loop' : ''}`);
+				el.setAttribute('marker-end', 'url(#flow-arrow)');
+				el.style.setProperty('--o', String(p.order));
+				svg.append(el);
+				const len = el.getTotalLength();
+				el.style.setProperty('--len', String(len));
+			}
+		};
+
+		draw();
+		new ResizeObserver(draw).observe(root);
+
+		const show = () => {
+			root.classList.add('is-visible');
+			window.removeEventListener('scroll', check);
+			io?.disconnect();
+		};
+		// Visible once its top passes 85% of the viewport height (or it is fully above).
+		const check = () => {
+			const r = root.getBoundingClientRect();
+			if (r.top < window.innerHeight * 0.85 && r.bottom > 0) show();
+		};
+		if (reduce) {
+			show();
+			return;
+		}
+		// IntersectionObserver as the main trigger; a passive scroll check as a fallback.
+		const io =
+			'IntersectionObserver' in window
+				? new IntersectionObserver((entries) => entries.some((e) => e.isIntersecting) && show(), {
+						rootMargin: '0px 0px -15% 0px',
+					})
+				: undefined;
+		io?.observe(root);
+		window.addEventListener('scroll', check, { passive: true });
+		check();
+	});
+</script>
+
+<style>
+	/* Light version: no panel, just the framed groups on the section background.
+	   Text: --ink on white ≥ 15:1; group names and numbers use the dark tone ≥ 6:1. */
+	.flow {
+		position: relative;
+		padding-top: 2.75rem; /* room for the loop that runs over the groups */
+		color: var(--ink);
+	}
+	.flow__lines {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		color: var(--violet-400);
+		overflow: visible;
+	}
+	.flow__lines :global(.flow__path) {
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 2;
+		stroke-linecap: round;
+	}
+	.flow__lines :global(.flow__path--loop) {
+		stroke: var(--teal-600);
+		stroke-dasharray: 6 6;
+	}
+	.flow__loop-label {
+		position: absolute;
+		z-index: 2;
+		transform: translate(-50%, -50%);
+		padding: 0.25rem 0.75rem;
+		border-radius: 999px;
+		background: var(--teal-100);
+		border: 1px solid var(--teal-300);
+		color: var(--teal-900);
+		font-size: 0.9rem;
+		font-weight: 700;
+		white-space: nowrap;
+	}
+	.flow:not(.is-enhanced) .flow__loop-label {
+		display: none;
+	}
+
+	.flow__groups {
+		position: relative;
+		z-index: 1;
+		display: grid;
+		gap: 2.5rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	/* One column: room on the right for the loop's lane. */
+	@media (max-width: 899px) {
+		.flow__groups {
+			padding-right: 1.75rem;
+		}
+	}
+	@media (min-width: 900px) {
+		.flow__groups {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: clamp(2.5rem, 4vw, 3.5rem);
+		}
+	}
+	/* Coloured frame per group, as in the reference. */
+	.flow__group {
+		display: grid;
+		align-content: start;
+		gap: 0.9rem;
+		padding: 1rem;
+		border: 2px solid var(--tone);
+		border-radius: calc(var(--radius) * 1.2);
+		background: rgb(255 255 255 / 0.45);
+	}
+	.flow__group--teal {
+		--tone: var(--teal-300);
+		--tone-ink: var(--teal-800);
+	}
+	.flow__group--violet {
+		--tone: var(--violet-300);
+		--tone-ink: var(--violet-700);
+	}
+	.flow__group--sky {
+		--tone: #8cc8ff;
+		--tone-ink: #1d5c9c;
+	}
+	.flow__group-name {
+		font-family: var(--font-display);
+		font-size: 0.95rem;
+		font-weight: 700;
+		color: var(--tone-ink);
+	}
+	.flow__steps {
+		display: grid;
+		gap: 2.25rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	.flow__step {
+		display: flex;
+		align-items: baseline;
+		gap: 0.75rem;
+		padding: 1rem 1.15rem;
+		border-radius: var(--radius);
+		border: 1px solid var(--line);
+		background: var(--surface);
+		box-shadow: 0 10px 24px -18px rgb(65 51 166 / 0.35);
+	}
+	.flow__n {
+		flex: none;
+		font-family: var(--font-display);
+		font-size: 1rem;
+		font-weight: 700;
+		color: var(--tone-ink);
+	}
+	.flow__title {
+		font-size: 1.05rem;
+		font-weight: 700;
+		line-height: 1.3;
+		color: var(--ink);
+	}
+
+	/* Reveal: steps one by one, each arrow drawn right after its step. */
+	.is-enhanced .flow__step,
+	.is-enhanced .flow__loop-label {
+		opacity: 0;
+		transform: translateY(14px);
+		transition:
+			opacity 0.5s ease,
+			transform 0.5s ease;
+		transition-delay: calc(var(--i, 7) * 0.35s);
+	}
+	.is-enhanced .flow__loop-label {
+		transform: translate(-50%, -30%);
+		--i: 7.2;
+	}
+	.is-enhanced :global(.flow__path) {
+		stroke-dasharray: var(--len) var(--len);
+		stroke-dashoffset: var(--len);
+		transition: stroke-dashoffset 0.45s ease;
+		transition-delay: calc(var(--o) * 0.35s + 0.25s);
+	}
+	.is-enhanced :global(.flow__path--loop) {
+		transition-duration: 0.9s;
+	}
+	.is-visible .flow__step {
+		opacity: 1;
+		transform: none;
+	}
+	.is-visible .flow__loop-label {
+		opacity: 1;
+		transform: translate(-50%, -50%);
+	}
+	.is-visible :global(.flow__path) {
+		stroke-dashoffset: 0;
+	}
+	/* Once drawn, the loop gets its dashes back. */
+	.is-visible :global(.flow__path--loop) {
+		animation: flow-dash 0s calc(var(--o) * 0.35s + 1.2s) forwards;
+	}
+	@keyframes flow-dash {
+		to {
+			stroke-dasharray: 6 6;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.is-enhanced .flow__step,
+		.is-enhanced .flow__loop-label,
+		.is-enhanced :global(.flow__path) {
+			transition: none;
+			animation: none;
+		}
+		.is-enhanced :global(.flow__path--loop) {
+			stroke-dasharray: 6 6;
+			stroke-dashoffset: 0;
+		}
+	}
+</style>

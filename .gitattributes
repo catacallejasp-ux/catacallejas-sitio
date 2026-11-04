@@ -1,0 +1,11 @@
+# Normalize to LF in the repo. Without this, a Windows clone with core.autocrlf=true
+# checks out CRLF and `pnpm format:check` fails in CI on files nobody touched.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+
+pnpm-lock.yaml linguist-generated=true -diff

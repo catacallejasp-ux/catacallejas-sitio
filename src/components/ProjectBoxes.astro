@@ -1,0 +1,113 @@
+---
+/** «Desafíos» and «Hitos» as two boxes side by side (stacked on small screens). */
+interface Props {
+	desafios: string[];
+	desafiosIntro?: string;
+	hitos: string[];
+}
+const { desafios, desafiosIntro, hitos } = Astro.props;
+
+const boxes = [
+	{
+		id: 'desafios',
+		titulo: 'Desafíos',
+		items: desafios,
+		intro: desafiosIntro,
+		tone: 'lilac',
+		// target
+		icon: '<circle cx="16" cy="16" r="11"/><circle cx="16" cy="16" r="6"/><circle cx="16" cy="16" r="1.5"/>',
+	},
+	{
+		id: 'hitos',
+		titulo: 'Hitos',
+		items: hitos,
+		intro: undefined as string | undefined,
+		tone: 'sky',
+		// flag
+		icon: '<path d="M7 29V4"/><path d="M7 5h16l-3.5 5L23 15H7"/>',
+	},
+].filter((b) => b.items.length > 0);
+---
+
+{
+	boxes.length > 0 && (
+		<div class:list={['boxes', boxes.length === 1 && 'boxes--single']}>
+			{boxes.map((b) => (
+				<section class:list={['box', `box--${b.tone}`]} aria-labelledby={b.id}>
+					<div class="box__head">
+						<svg
+							viewBox="0 0 32 32"
+							width="28"
+							height="28"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="1.75"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							aria-hidden="true"
+						>
+							<Fragment set:html={b.icon} />
+						</svg>
+						<h2 id={b.id}>{b.titulo}</h2>
+					</div>
+					{b.intro && <p class="box__intro">{b.intro}</p>}
+					<ul>
+						{b.items.map((item) => (
+							<li>{item}</li>
+						))}
+					</ul>
+				</section>
+			))}
+		</div>
+	)
+}
+
+<style>
+	.boxes {
+		display: grid;
+		gap: 1rem;
+	}
+	@media (min-width: 52rem) {
+		.boxes:not(.boxes--single) {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+	.box {
+		padding: clamp(1.5rem, 3vw, 2.25rem);
+		border-radius: calc(var(--radius) * 1.25);
+		border: 1px solid rgb(255 255 255 / 0.9);
+	}
+	.box--lilac {
+		background: var(--violet-100);
+	}
+	.box--sky {
+		background: var(--teal-100);
+	}
+	.box__head {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		color: var(--violet-700);
+	}
+	.box__head svg {
+		flex: none;
+	}
+	.box h2 {
+		font-size: 1.6rem;
+		color: var(--ink);
+	}
+	.box__intro {
+		margin-top: 1.25rem;
+		color: var(--ink);
+	}
+	.box ul {
+		display: grid;
+		gap: 0.75rem;
+		margin-top: 1.25rem;
+		padding-left: 1.25rem;
+		color: var(--ink);
+	}
+	.box li::marker {
+		color: var(--violet-700);
+	}
+</style>

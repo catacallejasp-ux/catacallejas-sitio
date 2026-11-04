@@ -1,0 +1,665 @@
+---
+/**
+ * Shared shell for every detail page under «Sobre mí»: projects
+ * (`/sobre-mi/proyectos/…`) and volunteering (`/sobre-mi/voluntariados/…`). The Markdown body goes in the default slot.
+ */
+import Icon from '../components/Icon.astro';
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+import BaseLayout from './BaseLayout.astro';
+import { perfil } from '../data/cv';
+import type { Section } from '../lib/nav';
+
+interface Props {
+	title: string;
+	/** Meta description. Shown under the title only when `showSummary`. */
+	summary: string;
+	showSummary?: boolean;
+	current?: Section;
+	links?: { label: string; url: string }[];
+	/** Small label above the title (omitted on project pages). */
+	eyebrow?: string;
+	back: { href: string; text: string };
+	results?: { value: string; label: string }[];
+	meta: { label: string; text?: string; chips?: string[]; tone?: 'teal' }[];
+	/** With a cover the header becomes a short photo banner with the title over it. */
+	cover?: { src: ImageMetadata; alt: string; focus?: string };
+	/** Name of the work, highlighted at the start of the facts band. */
+	nombre?: string;
+	/** Client logo (file name in src/assets/logos/) shown instead of the title text. */
+	logo?: string;
+	/** «¿Qué es?» paragraph, under the header. */
+	queEs?: string;
+	next: { href: string; title: string; label: string };
+	/** Previous entry, shown left of «next» when given. */
+	prev?: { href: string; title: string; label: string };
+	disclaimer?: boolean;
+}
+
+const {
+	title,
+	summary,
+	showSummary = false,
+	current,
+	links = [],
+	eyebrow,
+	back,
+	results = [],
+	meta,
+	cover,
+	logo,
+	nombre,
+	queEs,
+	next,
+	prev,
+	disclaimer = false,
+} = Astro.props;
+
+const logoFiles = import.meta.glob<string>('../assets/logos/*.svg', {
+	query: '?raw',
+	import: 'default',
+	eager: true,
+});
+// The h1 keeps the project name as its accessible name; the SVG is decorative.
+const logoSvg = logo
+	? logoFiles[`../assets/logos/${logo}.svg`]
+			?.replace(/\srole="[^"]*"/, '')
+			.replace(/\saria-label="[^"]*"/, '')
+			.replace('<svg', '<svg aria-hidden="true" focusable="false"')
+	: undefined;
+if (logo && !logoSvg) throw new Error(`Logo not found: src/assets/logos/${logo}.svg`);
+// With a cover, the results sit on the photo (desktop) instead of in their own band.
+const statsOnCover = Boolean(cover) && results.length > 0;
+---
+
+<BaseLayout title={`${title} · ${perfil.nombreCorto}`} description={summary} current={current}>
+	<article>
+		<header class:list={['intro', cover && 'intro--cover']}>
+			<div class="intro__glow" aria-hidden="true"></div>
+			<div class="container intro__inner">
+				<a class="back text-link" href={back.href}><Icon name="arrow-left" /> {back.text}</a>
+				{
+					cover ? (
+						<div class:list={['hero', statsOnCover && 'hero--stats']}>
+							<div class="hero__frame">
+								<Image
+									class="hero__img"
+									src={cover.src}
+									alt={cover.alt}
+									widths={[640, 1200, 1800]}
+									sizes="(max-width: 72rem) 100vw, 72rem"
+									loading="eager"
+									style={`object-position: ${cover.focus ?? '50% 50%'}`}
+								/>
+								<div class="hero__glass">
+									{eyebrow && <p class="eyebrow">{eyebrow}</p>}
+									{logoSvg ? (
+										<h1 class="hero__logo">
+											<Fragment set:html={logoSvg} />
+											<span class="visually-hidden">{title}</span>
+										</h1>
+									) : (
+										<h1 class="intro__title">{title}</h1>
+									)}
+								</div>
+							</div>
+							{statsOnCover && (
+								<section class="hero__stats" aria-labelledby="resultados">
+									<h2 id="resultados" class="visually-hidden">
+										Resultados
+									</h2>
+									<ul>
+										{results.map((r) => (
+											<li class="stat">
+												<span class="stat__value">{r.value}</span>
+												<span class="stat__label">{r.label}</span>
+											</li>
+										))}
+									</ul>
+								</section>
+							)}
+						</div>
+					) : (
+						<>
+							{eyebrow && <p class="eyebrow">{eyebrow}</p>}
+							<h1 class="intro__title">{title}</h1>
+						</>
+					)
+				}
+				{showSummary && <p class="intro__summary">{summary}</p>}
+				{
+					links.length > 0 && (
+						<p class="intro__links">
+							{links.map((l) => (
+								<a class="button button--primary" href={l.url} target="_blank" rel="noopener">
+									{l.label} <Icon name="external" />
+								</a>
+							))}
+						</p>
+					)
+				}
+			</div>
+		</header>
+
+		<aside class="meta" aria-label="Ficha del proyecto">
+			<dl class="container meta__list">
+				{
+					nombre && (
+						<div class="meta__item meta__item--name">
+							<dt class="visually-hidden">Proyecto</dt>
+							<dd>{nombre}</dd>
+						</div>
+					)
+				}
+				{
+					meta.map((m) => (
+						<div class="meta__item">
+							<dt>{m.label}</dt>
+							<dd>
+								{m.chips ? (
+									<ul class="chips">
+										{m.chips.map((c) => (
+											<li class:list={['chip', m.tone === 'teal' && 'chip--teal']}>{c}</li>
+										))}
+									</ul>
+								) : (
+									m.text
+								)}
+							</dd>
+						</div>
+					))
+				}
+			</dl>
+		</aside>
+
+		{
+			results.length > 0 && !statsOnCover && (
+				<section class="container results" aria-labelledby="resultados">
+					<h2 id="resultados" class="visually-hidden">
+						Resultados
+					</h2>
+					<ul class="results__list">
+						{results.map((r) => (
+							<li class="result">
+								<span class="result__value gradient-text">{r.value}</span>
+								<span class="result__label">{r.label}</span>
+							</li>
+						))}
+					</ul>
+				</section>
+			)
+		}
+
+		<div class="container body">
+			{
+				queEs && (
+					<section class="what" aria-labelledby="que-es">
+						<h2 id="que-es">¿Qué es?</h2>
+						<p>{queEs}</p>
+					</section>
+				)
+			}
+			{
+				Astro.slots.has('sections') && (
+					<div class="sections">
+						<slot name="sections" />
+					</div>
+				)
+			}
+			<div class="prose">
+				<slot />
+			</div>
+		</div>
+
+		{
+			Astro.slots.has('after') && (
+				<div class="container after">
+					<slot name="after" />
+				</div>
+			)
+		}
+
+		{
+			disclaimer && (
+				<p class="container disclaimer">
+					Toda la información de este sitio es de uso exclusivo y confidencial, únicamente con
+					fines laborales.
+				</p>
+			)
+		}
+
+		<nav
+			class:list={['container next', prev && 'next--pair']}
+			aria-label={prev ? 'Anterior y siguiente' : next.label}
+		>
+			{
+				prev && (
+					<a href={prev.href} class="next__prev">
+						<span class="next__label">{prev.label}</span>
+						<span class="next__title">
+							<Icon name="arrow-left" /> {prev.title}
+						</span>
+					</a>
+				)
+			}
+			<a href={next.href} class="next__next">
+				<span class="next__label">{next.label}</span>
+				<span class="next__title">{next.title} <Icon name="arrow-right" /></span>
+			</a>
+		</nav>
+	</article>
+</BaseLayout>
+
+<style>
+	.intro {
+		position: relative;
+		/* Clip only sideways: vertical overflow (shadows) stays visible. */
+		overflow-x: clip;
+		padding-block: clamp(2.5rem, 6vw, 4.5rem) clamp(2rem, 5vw, 3.5rem);
+	}
+	.intro__glow {
+		position: absolute;
+		inset: 0;
+		background: var(--glow);
+	}
+	.intro__inner {
+		position: relative;
+	}
+	.back {
+		margin-bottom: 2rem;
+	}
+	.intro .eyebrow {
+		display: block;
+	}
+	.intro {
+		background: var(--lavender-50);
+		border-bottom: 1px solid var(--line);
+		margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
+	}
+	.intro__title {
+		font-size: clamp(2.6rem, 1.2rem + 5.5vw, 5rem);
+		font-weight: 700;
+		line-height: 0.98;
+		letter-spacing: -0.045em;
+	}
+	.intro__summary {
+		margin-top: 1rem;
+		max-width: 52ch;
+		font-size: clamp(1.05rem, 1rem + 0.3vw, 1.2rem);
+		color: var(--ink-muted);
+	}
+
+	.intro__links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		margin-top: 1.5rem;
+	}
+	/* Photo banner: short, with the title on a frosted-glass panel over its lower-left
+	   corner (same glass as the project cards). Title --ink on white glass ≥ 7:1. */
+	.intro--cover {
+		padding-bottom: clamp(1.5rem, 4vw, 2.5rem);
+	}
+	.intro--cover .back {
+		margin-bottom: 1.25rem;
+	}
+	.hero,
+	.hero__frame {
+		position: relative;
+	}
+	.hero :global(.hero__img) {
+		border-radius: calc(var(--radius) * 1.6);
+		box-shadow: 0 24px 44px -28px rgb(65 51 166 / 0.5);
+		display: block;
+		width: 100%;
+		height: clamp(15rem, 28vw, 22rem);
+		object-fit: cover;
+	}
+	.hero__glass {
+		position: absolute;
+		left: clamp(0.75rem, 2vw, 1.5rem);
+		bottom: clamp(0.75rem, 2vw, 1.5rem);
+		max-width: calc(100% - 2 * clamp(0.75rem, 2vw, 1.5rem));
+		padding: clamp(0.9rem, 2.5vw, 1.4rem) clamp(1.1rem, 3vw, 2rem);
+		border-radius: calc(var(--radius) * 1.3);
+		/* Dark violet glass: the logo (or title) is white on it. White on
+		   --violet-900 at 72% over any photo stays above 7:1. */
+		border: 1px solid rgb(255 255 255 / 0.28);
+		background: rgb(49 36 141 / 0.72);
+		box-shadow:
+			inset 0 1px 0 rgb(255 255 255 / 0.25),
+			0 16px 30px -18px rgb(28 32 48 / 0.6);
+		-webkit-backdrop-filter: blur(14px) saturate(140%);
+		backdrop-filter: blur(14px) saturate(140%);
+		color: #fff;
+	}
+	@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+		.hero__glass {
+			background: rgb(49 36 141 / 0.94);
+		}
+	}
+	.hero__glass .intro__title {
+		color: #fff;
+	}
+	.hero .intro__title {
+		font-size: clamp(2.2rem, 1.2rem + 4vw, 4rem);
+	}
+	/* Logo in place of the title: same visual weight for wide and square marks. */
+	.hero__logo {
+		display: block;
+		margin: 0;
+		color: #fff;
+		line-height: 0;
+	}
+	.hero__logo :global(svg) {
+		display: block;
+		width: auto;
+		height: clamp(3rem, 2rem + 3vw, 5.5rem);
+		max-width: min(24rem, 62vw);
+	}
+
+	/* Results on the photo: glass tiles along its bottom edge (desktop). Under
+	   56rem they move below the photo, where there is room. */
+	.hero__stats ul {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr));
+		gap: 0.75rem;
+		margin: 1rem 0 0;
+		padding: 0;
+		list-style: none;
+	}
+	.stat {
+		display: grid;
+		align-content: start;
+		gap: 0.3rem;
+		padding: 1rem 1.1rem;
+		border-radius: var(--radius);
+		border: 1px solid var(--line);
+		background: var(--surface);
+	}
+	.stat__value {
+		font-family: var(--font-display);
+		font-size: clamp(1.9rem, 1.4rem + 1.6vw, 2.6rem);
+		font-weight: 700;
+		line-height: 1;
+		letter-spacing: -0.04em;
+		color: var(--violet-800);
+	}
+	.stat__label {
+		font-size: 0.92rem;
+		line-height: 1.35;
+		color: var(--ink);
+	}
+	/* Taller photo on every project page. */
+	.hero :global(.hero__img) {
+		height: clamp(18rem, 42vw, 34rem);
+	}
+	@media (min-width: 56rem) {
+		/* Tiles sit on the photo's bottom edge, half on it and half below
+		   (--stat-h / 2 each way); the logo panel sits just above them. */
+		.hero--stats {
+			--stat-h: 7.5rem;
+			margin-bottom: calc(var(--stat-h) / 2);
+		}
+		.hero--stats .hero__glass {
+			left: clamp(1rem, 3vw, 2.5rem);
+			bottom: calc(var(--stat-h) / 2 + clamp(1rem, 2vw, 1.5rem));
+		}
+		.hero__stats {
+			position: absolute;
+			left: clamp(1rem, 3vw, 2.5rem);
+			right: clamp(1rem, 3vw, 2.5rem);
+			bottom: 0;
+			transform: translateY(50%);
+		}
+		.hero--stats .stat {
+			height: var(--stat-h);
+		}
+		.hero__stats ul {
+			grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+			grid-auto-flow: column;
+			margin: 0;
+		}
+		/* Glass tiles: text --ink / --violet-800 on white at 78% ≥ 7:1. */
+		.stat {
+			border-color: rgb(255 255 255 / 0.6);
+			background: rgb(255 255 255 / 0.8);
+			box-shadow:
+				inset 0 1px 0 rgb(255 255 255 / 0.8),
+				0 16px 30px -18px rgb(65 51 166 / 0.45);
+			-webkit-backdrop-filter: blur(14px) saturate(160%);
+			backdrop-filter: blur(14px) saturate(160%);
+		}
+	}
+
+	/* Structured sections (Desafíos · Hitos, proceso, antes/después, galería). */
+	.after {
+		display: grid;
+		gap: clamp(3rem, 7vw, 5rem);
+		padding-bottom: clamp(3rem, 6vw, 4.5rem);
+	}
+	/* When the Markdown body is short, it doesn't need the full bottom padding. */
+	.body:has(+ .after) {
+		padding-bottom: clamp(2rem, 4vw, 3rem);
+	}
+	/* «¿Qué es?»: first block of the text column, same heading as «Desafíos». */
+	.what {
+		margin-bottom: 2.75rem;
+	}
+	/* Desafíos · Hitos and the roadmap, between «¿Qué es?» and the Markdown body. */
+	.sections {
+		display: grid;
+		gap: clamp(3rem, 7vw, 5rem);
+		margin-bottom: clamp(3rem, 7vw, 5rem);
+	}
+	.sections:has(+ .prose:not(:has(*))) {
+		margin-bottom: 0;
+	}
+	.what h2 {
+		font-size: 1.6rem;
+		margin-bottom: 0.75rem;
+	}
+	.what p {
+		color: #34304d;
+		font-size: clamp(1.1rem, 1rem + 0.4vw, 1.3rem);
+		line-height: 1.6;
+	}
+
+	.results__list {
+		list-style: none;
+		padding: 0;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+		gap: 1rem;
+	}
+	.result {
+		display: grid;
+		align-content: start;
+		gap: 0.25rem;
+		padding: 1.25rem;
+		background: var(--surface);
+		border: 1px solid var(--line);
+		border-radius: var(--radius);
+		box-shadow: var(--shadow);
+	}
+	.result__value {
+		font-size: clamp(2.2rem, 1.6rem + 2vw, 3rem);
+		letter-spacing: -0.04em;
+		font-weight: 700;
+		line-height: 1;
+		justify-self: start;
+	}
+	.result__label {
+		font-size: 0.9rem;
+		color: var(--ink-muted);
+	}
+
+	/* Project facts as a band right under the header: it sticks under the site
+	   header while reading (from 52rem; on phones it scrolls away with the page). */
+	.meta {
+		z-index: 20;
+		margin-top: calc(-1 * clamp(1.5rem, 4vw, 2.5rem));
+		background: rgb(255 255 255 / 0.88);
+		border-bottom: 1px solid var(--line);
+		-webkit-backdrop-filter: blur(12px);
+		backdrop-filter: blur(12px);
+	}
+	@media (min-width: 52rem) {
+		.meta {
+			position: sticky;
+			top: calc(4rem + 1px);
+		}
+	}
+	.meta__list {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.6rem 2rem;
+		margin-block: 0;
+		padding-block: 0.85rem;
+	}
+	.meta__item {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.4rem 0.6rem;
+	}
+	.meta dt {
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: var(--ink-muted);
+	}
+	.meta dt::after {
+		content: ':';
+	}
+	/* The project's name leads the band, set apart by a divider. */
+	.meta__item--name {
+		padding-right: 2rem;
+		border-right: 1px solid var(--line);
+	}
+	.meta .meta__item--name dd {
+		font-family: var(--font-display);
+		font-size: clamp(1.1rem, 1rem + 0.4vw, 1.3rem);
+		font-weight: 700;
+		letter-spacing: -0.01em;
+		color: var(--violet-800);
+	}
+	.meta dd {
+		margin: 0;
+		font-size: 0.95rem;
+	}
+	.meta .chips {
+		gap: 0.3rem;
+	}
+	.meta .chip {
+		padding-block: 0.2rem;
+	}
+
+	.body {
+		padding-block: clamp(2.5rem, 5vw, 4rem);
+	}
+	/* Markdown body — styles target generated HTML, so they must be global. */
+	.prose:not(:has(*)) {
+		display: none;
+	}
+	.prose {
+		min-width: 0;
+	}
+	.prose :global(h2) {
+		font-size: 1.6rem;
+		margin-top: 2.75rem;
+		margin-bottom: 0.75rem;
+	}
+	.prose :global(h2:first-child) {
+		margin-top: 0;
+	}
+	.prose :global(h3) {
+		font-size: 1.2rem;
+		margin-top: 2rem;
+		margin-bottom: 0.5rem;
+	}
+	.prose :global(p),
+	.prose :global(ul),
+	.prose :global(ol) {
+		margin-top: 0.9rem;
+		color: #34304d;
+	}
+	.prose :global(ul),
+	.prose :global(ol) {
+		padding-left: 1.25rem;
+	}
+	.prose :global(li + li) {
+		margin-top: 0.4rem;
+	}
+	.prose :global(li::marker) {
+		color: var(--violet);
+	}
+	.prose :global(img),
+	.prose :global(video) {
+		/* Landscape images fill the column; tall ones are capped so they don't dominate. */
+		width: auto;
+		max-width: 100%;
+		max-height: 40rem;
+		height: auto;
+		margin-inline: auto;
+		margin-top: 1.75rem;
+		border-radius: var(--radius-sm);
+		border: 1px solid var(--line);
+		box-shadow: var(--shadow);
+	}
+	.prose :global(video) {
+		max-width: min(24rem, 100%);
+		background: var(--surface-deep);
+	}
+	.prose :global(em) {
+		font-size: 0.9rem;
+		color: var(--ink-muted);
+	}
+	.disclaimer {
+		margin-bottom: clamp(2rem, 5vw, 3rem);
+		padding-top: 1.25rem;
+		border-top: 1px solid var(--line);
+		font-size: 0.9rem;
+		color: var(--ink-muted) !important;
+	}
+
+	.next {
+		display: grid;
+		gap: 1rem;
+		padding-bottom: clamp(3rem, 6vw, 5rem);
+	}
+	@media (min-width: 40rem) {
+		.next--pair {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+	/* Previous: secondary look (border only); next: the deep violet card. */
+	.next .next__prev {
+		background: transparent;
+		color: var(--violet-800);
+		box-shadow: inset 0 0 0 1.5px var(--violet-600);
+	}
+	.next .next__prev:hover {
+		box-shadow: inset 0 0 0 2.5px var(--violet-700);
+	}
+	.next__next {
+		text-align: right;
+	}
+	.next a {
+		display: grid;
+		gap: 0.25rem;
+		padding: 1.75rem 2rem;
+		border-radius: var(--radius);
+		background: var(--gradient-deep);
+		color: #fff;
+		text-decoration: none;
+	}
+	.next__label {
+		font-size: 0.9rem;
+		opacity: 0.9;
+	}
+	.next__title {
+		font-size: clamp(1.3rem, 1rem + 1.5vw, 1.9rem);
+		font-weight: 600;
+	}
+</style>

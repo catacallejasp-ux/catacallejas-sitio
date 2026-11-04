@@ -1,0 +1,163 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageIntro from '../components/PageIntro.astro';
+import FeatureBand from '../components/FeatureBand.astro';
+import DeviceMockup from '../components/DeviceMockup.astro';
+import Button from '../components/Button.astro';
+import Tag from '../components/Tag.astro';
+import IntroPoints from '../components/IntroPoints.astro';
+import { perfil, revisaTuPitch, pasosDemo, otrosArtefactos } from '../data/cv';
+
+const puntos = [
+	{
+		titulo: '¿Qué es?',
+		texto:
+			'Un espacio donde puedes revisar y copiar para tu propio uso los artefactos que he creado en mis experimentaciones personales.',
+		// flask
+		icono:
+			'<path d="M12 4h8M13 4v8L6 25a2 2 0 0 0 1.8 3h16.4a2 2 0 0 0 1.8-3l-7-13V4"/><path d="M9.5 19h13"/>',
+	},
+	{
+		titulo: '¿Para quién?',
+		texto:
+			'Para todas las personas; estas herramientas surgen tanto de mi vida profesional como personal, por lo que puedes usarlas libremente según tus necesidades.',
+		// a group of people
+		icono:
+			'<circle cx="16" cy="8" r="3.5"/><path d="M10 19a6 6 0 0 1 12 0"/><circle cx="6.5" cy="21" r="2.5"/><circle cx="25.5" cy="21" r="2.5"/><path d="M2.5 29a4 4 0 0 1 8 0M21.5 29a4 4 0 0 1 8 0"/>',
+	},
+	{
+		titulo: '¿En qué consiste?',
+		texto:
+			'Un recopilatorio actualizado de los nuevos artefactos que voy creando, a tu disposición.',
+		// stacked layers
+		icono: '<path d="m16 4 12 6-12 6-12-6Z"/><path d="m4 16 12 6 12-6M4 22l12 6 12-6"/>',
+	},
+];
+---
+
+<BaseLayout
+	title={`Artefactos · ${perfil.nombreCorto}`}
+	description="Artefactos pequeños y útiles de Catalina Callejas, como «Revisa tu pitch»."
+	current="artefactos"
+>
+	<PageIntro crumb="Artefactos" title="Artefactos" divider={false}>
+		<IntroPoints slot="lead" tag="Zona de experimentación" tagUnderEm={5} points={puntos} />
+	</PageIntro>
+
+	<section class="section section--tinted section--after-intro">
+		<div class="container">
+			<FeatureBand title={revisaTuPitch.titulo}>
+				<Tag slot="eyebrow">Destacado</Tag>
+				<Fragment slot="text">
+					<ol class="steps">
+						{revisaTuPitch.pasos.map((paso) => <li>{paso}</li>)}
+					</ol>
+				</Fragment>
+				<Fragment slot="actions">
+					<Button href={revisaTuPitch.url} external pendingLabel="URL pendiente">
+						Usar artefacto
+					</Button>
+				</Fragment>
+				<Fragment slot="media">
+					<DeviceMockup
+						address="claude.ai/artifact · Hablando nuestro trabajo"
+						label="Demostración paso a paso de la herramienta «Revisa tu pitch», en escritorio."
+						steps={pasosDemo}
+					/>
+				</Fragment>
+			</FeatureBand>
+
+			<ul class="more">
+				{
+					otrosArtefactos.map((a) => (
+						<li class="tool">
+							<span class="tool__icon" aria-hidden="true">
+								<svg
+									viewBox="0 0 32 32"
+									width="32"
+									height="32"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="1.75"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								>
+									<Fragment set:html={a.icono} />
+								</svg>
+							</span>
+							<h2 class="tool__title">{a.titulo}</h2>
+							<p class="tool__text">{a.descripcion}</p>
+							<div class="tool__action">
+								<Button href={a.url} external icon>
+									Usar artefacto
+								</Button>
+							</div>
+						</li>
+					))
+				}
+			</ul>
+		</div>
+	</section>
+</BaseLayout>
+
+<style>
+	/* Reads as running text, like the band's lead: numbers only, no badges. */
+	.steps {
+		margin-top: 0.9rem;
+		padding-left: 1.4em;
+		color: var(--ink-muted);
+		list-style: decimal;
+	}
+	.steps li + li {
+		margin-top: 0.25rem;
+	}
+	.steps li::marker {
+		color: var(--ink-muted);
+	}
+
+	/* Two smaller artifacts under the featured one: same lavender card, icon instead of mockup. */
+	.more {
+		display: grid;
+		gap: clamp(1rem, 3vw, 1.5rem);
+		margin-top: clamp(1rem, 3vw, 1.5rem);
+		padding: 0;
+		list-style: none;
+	}
+	@media (min-width: 760px) {
+		.more {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+	.tool {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		padding: clamp(1.5rem, 4vw, 2.5rem);
+		background: var(--lavender-100);
+		border-radius: calc(var(--radius) * 1.25);
+	}
+	.tool__icon {
+		display: grid;
+		place-items: center;
+		width: 64px;
+		height: 64px;
+		border-radius: 999px;
+		background: var(--surface);
+		color: var(--violet);
+	}
+	.tool__title {
+		margin-top: 1.25rem;
+		font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+		font-weight: 700;
+		letter-spacing: -0.03em;
+	}
+	.tool__text {
+		margin-top: 0.6rem;
+		color: var(--ink-muted);
+	}
+	/* Pushes the button to the bottom so both cards line up. */
+	.tool__action {
+		margin-top: auto;
+		padding-top: 1.5rem;
+	}
+</style>

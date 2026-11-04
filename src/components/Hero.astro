@@ -1,0 +1,102 @@
+---
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+import Button from './Button.astro';
+
+interface Cta {
+	href: string;
+	label: string;
+}
+interface Props {
+	/** Headline split in three so the middle part (the name) can be highlighted. */
+	before: string;
+	highlight: string;
+	after: string;
+	primaryCta: Cta;
+	secondaryCta: Cta;
+	portrait: { src: ImageMetadata; alt: string };
+}
+const { before, highlight, after, primaryCta, secondaryCta, portrait } = Astro.props;
+---
+
+<section class="hero">
+	<div class="container hero__grid">
+		<div class="hero__text">
+			<h1 class="hero__title">
+				{before}{' '}
+				<span class="hero__highlight">{highlight}</span>{' '}
+				{after}
+			</h1>
+			<div class="hero__actions">
+				<Button href={primaryCta.href} icon>{primaryCta.label}</Button>
+				<Button href={secondaryCta.href} variant="ghost">{secondaryCta.label}</Button>
+			</div>
+		</div>
+		<div class="hero__portrait">
+			<Image
+				src={portrait.src}
+				alt={portrait.alt}
+				width={520}
+				widths={[320, 520, 800]}
+				sizes="(max-width: 56rem) 80vw, 480px"
+				loading="eager"
+				fetchpriority="high"
+			/>
+		</div>
+	</div>
+</section>
+
+<style>
+	.hero {
+		/* Compact on purpose: the client band and the top of the folders must show in
+		   the first screen (checked at 1440×800 and 1366×680 viewports). */
+		padding-block: clamp(1.5rem, 3vw, 2.5rem) clamp(2rem, 3.5vw, 3rem);
+	}
+	.hero__grid {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: clamp(1.5rem, 3vw, 3rem);
+		align-items: center;
+	}
+	@media (min-width: 56rem) {
+		.hero__grid {
+			grid-template-columns: 1.4fr 1fr;
+		}
+	}
+	.hero__title {
+		font-size: clamp(2rem, 1.2rem + 3vw, 3.5rem);
+		/* Lighter than the rest of the headings, on purpose. */
+		font-weight: 500;
+		line-height: 1.05;
+		letter-spacing: -0.035em;
+		max-width: 19ch;
+		/* `balance` (from the reset) left «y» alone at a line end; `pretty` avoids it. */
+		text-wrap: pretty;
+	}
+	.hero__highlight {
+		/* Brand violet #7B66FF: large text, AA for ≥ 24px (3.81:1 on the page bg). */
+		color: var(--violet-500);
+		font-weight: 600;
+	}
+	.hero__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		margin-top: clamp(1.5rem, 3vw, 2.25rem);
+	}
+	/* The illustration carries its own rounded border; no panel behind it. */
+	.hero__portrait img {
+		display: block;
+		width: auto;
+		height: auto;
+		max-width: 100%;
+		/* Height-capped so the hero stays short on wide and short screens alike. */
+		max-height: min(50vh, 24rem);
+		margin-inline: auto;
+	}
+	@media (max-width: 55.99rem) {
+		.hero__portrait img {
+			max-height: 11rem;
+		}
+	}
+</style>

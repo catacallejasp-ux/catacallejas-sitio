@@ -1,0 +1,297 @@
+---
+/**
+ * Glass card (moodboard reference). `shape="folder"` adds the folder back (a tab
+ * joined to the back panel by a soft S-curve) and a sheet of paper that peeks out on
+ * hover/focus; `shape="box"` is the plain glass panel.
+ * The whole card is one link.
+ *
+ * Both tones are light frosted glass (60% tint + blur) with --ink text and
+ * --violet-800 links. Worst case measured with a colour blob right behind the glass:
+ *   lilac (--violet-200) → ink ≥ 10:1, links ≥ 5.79:1
+ *   sky   (--teal-200)   → ink ≥ 10.5:1, links ≥ 6.08:1
+ */
+interface Props {
+	title: string;
+	text: string;
+	href: string;
+	linkLabel: string;
+	tone?: 'lilac' | 'sky';
+	shape?: 'folder' | 'box';
+	icon: 'book' | 'tool' | 'chat';
+}
+const { title, text, href, linkLabel, tone = 'lilac', shape = 'folder', icon } = Astro.props;
+
+// Simple line icons, decorative.
+const paths: Record<Props['icon'], string> = {
+	book: 'M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5zm0 14a2 2 0 0 1 2-2h13',
+	tool: 'M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4 2.5-2.5z',
+	chat: 'M4 5h16v10H9l-5 4V5z',
+};
+---
+
+<a class:list={['folder', `folder--${tone}`, shape === 'box' && 'folder--box']} href={href}>
+	{
+		shape === 'folder' && (
+			<>
+				<span class="folder__back" aria-hidden="true">
+					<span class="folder__back-tab" />
+					<svg class="folder__back-curve" viewBox="0 0 56 60">
+						<path d="M0 0C24 0 26 36 56 36V60H0Z" />
+					</svg>
+					<span class="folder__back-body" />
+				</span>
+				<span class="folder__paper" aria-hidden="true">
+					<span />
+					<span />
+					<span />
+				</span>
+			</>
+		)
+	}
+	<span class="folder__front">
+		<h3 class="folder__title">{title}</h3>
+		<p class="folder__text">{text}</p>
+		<span class="folder__footer">
+			<span class="folder__link">
+				<svg
+					viewBox="0 0 24 24"
+					width="20"
+					height="20"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.8"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					aria-hidden="true"><path d={paths[icon]}></path></svg
+				>
+				{linkLabel}
+			</span>
+			<span class="folder__arrow" aria-hidden="true">
+				<svg viewBox="0 0 20 20" width="18" height="18"
+					><path
+						d="M4 10h12M11 5l5 5-5 5"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="1.8"
+						stroke-linecap="round"
+						stroke-linejoin="round"></path></svg
+				>
+			</span>
+		</span>
+	</span>
+</a>
+
+<style>
+	.folder {
+		--tab-h: 2.25rem;
+		position: relative;
+		display: block;
+		height: 100%;
+		min-height: 17rem;
+		/* Front starts a little below the tab so the back panel peeks out. */
+		padding-top: calc(var(--tab-h) + 0.6rem);
+		color: var(--ink);
+		text-decoration: none;
+		isolation: isolate;
+	}
+
+	/*
+		Folder back, three opaque pieces of the same colour that overlap so there are
+		no seams: the tab (rounded top-left), a fixed-size S-curve shoulder (SVG, so it
+		never distorts with the card width) and the back panel, whose top edge shows
+		above the glass front. --tab-h must match the curve: 2.25rem = 36px of 60px.
+	*/
+	.folder__back {
+		position: absolute;
+		inset: 0 0 1rem;
+		z-index: -2;
+	}
+	.folder__back-tab {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 38%;
+		height: calc(var(--tab-h) + 1.5rem);
+		border-radius: 22px 0 0 0;
+		background: var(--tab);
+	}
+	.folder__back-curve {
+		position: absolute;
+		top: 0;
+		left: calc(38% - 1px);
+		width: 3.5rem;
+		height: calc(var(--tab-h) + 1.5rem);
+		fill: var(--tab);
+	}
+	.folder__back-body {
+		position: absolute;
+		top: var(--tab-h);
+		left: 0;
+		right: 0;
+		bottom: 0;
+		border-radius: 22px;
+		background: var(--tab);
+		box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.55);
+	}
+
+	/* Sheet of paper tucked inside; slides up on hover/focus. */
+	.folder__paper {
+		position: absolute;
+		top: calc(var(--tab-h) + 0.25rem);
+		left: 10%;
+		right: 10%;
+		z-index: -1;
+		height: 8rem;
+		display: grid;
+		align-content: start;
+		gap: 0.5rem;
+		padding: 1rem 1.1rem;
+		border-radius: 12px;
+		background: #fff;
+		box-shadow: 0 4px 14px rgb(28 32 48 / 0.12);
+		transform: translateY(0.5rem) rotate(-2deg);
+		/* Hidden at rest: behind the glass it would read as a white smudge. */
+		opacity: 0;
+		transition:
+			transform 0.3s ease,
+			opacity 0.2s ease;
+	}
+	.folder__paper span {
+		height: 0.45rem;
+		border-radius: 999px;
+		background: var(--violet-200);
+	}
+	.folder__paper span:nth-child(1) {
+		width: 55%;
+		background: var(--teal-300);
+	}
+	.folder__paper span:nth-child(3) {
+		width: 70%;
+	}
+
+	/* Glass front panel. */
+	.folder__front {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		min-height: 15rem;
+		padding: clamp(1.4rem, 3vw, 2rem);
+		border-radius: var(--radius);
+		background: var(--front);
+		border: 1px solid rgb(255 255 255 / 0.35);
+		box-shadow:
+			inset 0 1px 0 rgb(255 255 255 / 0.35),
+			0 18px 40px -18px var(--glow-color);
+		-webkit-backdrop-filter: blur(14px) saturate(140%);
+		backdrop-filter: blur(14px) saturate(140%);
+		transition: transform 0.3s ease;
+	}
+	.folder__title {
+		font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+		font-weight: 600;
+		letter-spacing: -0.03em;
+	}
+	.folder__text {
+		margin-top: 0.6rem;
+		font-size: 0.98rem;
+		flex: 1;
+	}
+	.folder__footer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		margin-top: 1.5rem;
+	}
+	.folder__link {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-family: var(--font-display);
+		font-weight: 500;
+		font-size: 0.95rem;
+	}
+	.folder__arrow {
+		display: grid;
+		place-items: center;
+		flex: none;
+		width: 44px;
+		height: 44px;
+		border-radius: 50%;
+		box-shadow: inset 0 0 0 1.5px currentColor;
+		transition:
+			background-color 0.2s ease,
+			color 0.2s ease;
+	}
+
+	/* Hover / focus: the front dips, the paper rises. */
+	.folder:hover .folder__paper,
+	.folder:focus-visible .folder__paper {
+		transform: translateY(-2.75rem) rotate(-3deg);
+		opacity: 1;
+	}
+	.folder:hover .folder__front,
+	.folder:focus-visible .folder__front {
+		transform: translateY(0.35rem);
+	}
+	.folder:focus-visible {
+		outline-offset: 6px;
+		border-radius: var(--radius);
+	}
+
+	/* Tones: light frosted glass over a slightly deeper back. */
+	.folder--lilac {
+		--tab: var(--violet-300);
+		--front: rgb(218 212 255 / 0.6); /* --violet-200 */
+		--glow-color: rgb(103 84 224 / 0.35);
+	}
+	.folder--sky {
+		--tab: var(--teal-300);
+		--front: rgb(189 233 239 / 0.6); /* --teal-200 */
+		--glow-color: rgb(38 154 170 / 0.35);
+	}
+	.folder__front {
+		border-color: rgb(255 255 255 / 0.9);
+		box-shadow:
+			inset 0 1px 0 #fff,
+			inset 0 0 18px rgb(255 255 255 / 0.35),
+			0 18px 40px -18px var(--glow-color);
+	}
+	.folder__link,
+	.folder__arrow {
+		color: var(--violet-800);
+	}
+	.folder:hover .folder__arrow,
+	.folder:focus-visible .folder__arrow {
+		background: var(--violet-600);
+		color: #fff;
+	}
+
+	/* Box: no tab, no paper; same glass. In a row it keeps the folders' top offset so
+	   the three fronts line up; stacked (below 900px) it drops that offset. */
+	@media (max-width: 899px) {
+		.folder--box {
+			padding-top: 0;
+		}
+	}
+
+	/* Browsers without backdrop-filter: opaque tint so text stays legible. */
+	@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+		.folder--lilac {
+			--front: var(--violet-100);
+		}
+		.folder--sky {
+			--front: var(--teal-100);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.folder:hover .folder__paper,
+		.folder:focus-visible .folder__paper,
+		.folder:hover .folder__front,
+		.folder:focus-visible .folder__front {
+			transform: none;
+		}
+	}
+</style>

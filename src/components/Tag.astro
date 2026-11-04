@@ -1,0 +1,9 @@
+---
+/** Non-interactive label. */
+interface Props {
+	tone?: 'violet' | 'teal';
+}
+const { tone = 'violet' } = Astro.props;
+---
+
+<span class:list={['chip', tone === 'teal' && 'chip--teal']}><slot /></span>

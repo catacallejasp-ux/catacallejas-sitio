@@ -1,0 +1,81 @@
+---
+import { render } from 'astro:content';
+import DetalleLayout from '../../../layouts/DetalleLayout.astro';
+import ProjectBoxes from '../../../components/ProjectBoxes.astro';
+import Roadmap from '../../../components/Roadmap.astro';
+import BeforeAfter from '../../../components/BeforeAfter.astro';
+import ImageCarousel from '../../../components/ImageCarousel.astro';
+import { getProyectos } from '../../../lib/contenido';
+
+export async function getStaticPaths() {
+	const proyectos = await getProyectos();
+	return proyectos.map((proyecto, i) => ({
+		params: { id: proyecto.id },
+		props: {
+			proyecto,
+			siguiente: proyectos[(i + 1) % proyectos.length],
+			anterior: proyectos[(i - 1 + proyectos.length) % proyectos.length],
+		},
+	}));
+}
+
+const { proyecto, siguiente, anterior } = Astro.props;
+const { data } = proyecto;
+const { Content } = await render(proyecto);
+
+const meta = [
+	{ label: 'Fecha', text: data.dateLabel },
+	...(data.methodology ? [{ label: 'Metodología', text: data.methodology }] : []),
+	{ label: 'Mi rol', chips: data.roles },
+	{ label: 'Tareas principales', chips: data.tasks, tone: 'teal' as const },
+	{ label: 'Herramientas', text: data.tools.join(' · ') },
+];
+---
+
+<DetalleLayout
+	title={data.title}
+	summary={data.description}
+	current="sobre-mi"
+	back={{ href: `/sobre-mi#proyecto-${proyecto.id}`, text: 'Volver a Sobre mí' }}
+	results={data.results}
+	logo={data.logo}
+	nombre={data.nombre}
+	queEs={data.queEs}
+	meta={meta}
+	cover={data.cover && data.coverAlt
+		? { src: data.cover, alt: data.coverAlt, focus: data.coverFocus }
+		: undefined}
+	prev={{
+		href: `/sobre-mi/proyectos/${anterior.id}`,
+		title: anterior.data.title,
+		label: 'Proyecto anterior',
+	}}
+	next={{
+		href: `/sobre-mi/proyectos/${siguiente.id}`,
+		title: siguiente.data.title,
+		label: 'Siguiente proyecto',
+	}}
+	disclaimer
+>
+	{
+		(data.desafios.length > 0 || data.hitos.length > 0 || data.proceso.length > 0) && (
+			<Fragment slot="sections">
+				<ProjectBoxes
+					desafios={data.desafios}
+					desafiosIntro={data.desafiosIntro}
+					hitos={data.hitos}
+				/>
+				{data.proceso.length > 0 && <Roadmap pasos={data.proceso} />}
+			</Fragment>
+		)
+	}
+	<Content />
+	{
+		(data.antesDespues || data.galeria) && (
+			<Fragment slot="after">
+				{data.antesDespues && <BeforeAfter {...data.antesDespues} />}
+				{data.galeria && <ImageCarousel {...data.galeria} />}
+			</Fragment>
+		)
+	}
+</DetalleLayout>

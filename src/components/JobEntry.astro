@@ -1,0 +1,133 @@
+---
+import Tag from './Tag.astro';
+
+interface Props {
+	period: string;
+	company: string;
+	role: string;
+	bullets: string[];
+	projects?: { slug: string; title: string }[];
+	keyProjects?: string;
+	clients?: string[];
+	/** Label next to the company (e.g. «Actualidad»). */
+	tag?: string;
+}
+const {
+	period,
+	company,
+	role,
+	bullets,
+	projects = [],
+	keyProjects,
+	clients = [],
+	tag,
+} = Astro.props;
+---
+
+<li class="job">
+	<p class="job__period">{period}</p>
+	<article class="card job__card">
+		<div class="job__head">
+			<h3 class="job__company">{company}</h3>
+			{tag && <Tag tone="teal">{tag}</Tag>}
+		</div>
+		<p class="job__role">{role}</p>
+		<ul class="job__bullets">
+			{bullets.map((b) => <li>{b}</li>)}
+		</ul>
+		{
+			projects.length > 0 && (
+				<div class="job__extra">
+					<p class="job__extra-label">Proyectos de este rol</p>
+					<ul class="job__projects">
+						{projects.map((p) => (
+							<li>
+								<a class="chip-link" href={`#proyecto-${p.slug}`}>
+									{p.title}
+								</a>
+							</li>
+						))}
+					</ul>
+				</div>
+			)
+		}
+		{
+			clients.length > 0 && (
+				<p class="job__note">
+					<span class="job__extra-label">Clientes:</span> {clients.join(', ')}
+				</p>
+			)
+		}
+		{
+			keyProjects && (
+				<p class="job__note">
+					<span class="job__extra-label">Proyectos clave:</span> {keyProjects}
+				</p>
+			)
+		}
+	</article>
+</li>
+
+<style>
+	.job__head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.4rem 0.75rem;
+	}
+	.job {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 0.5rem;
+	}
+	@media (min-width: 900px) {
+		.job {
+			grid-template-columns: 9rem 1fr;
+			gap: 2rem;
+		}
+	}
+	.job__period {
+		font-weight: 600;
+		color: var(--violet-ink);
+		padding-top: 0.25rem;
+	}
+	.job__company {
+		font-size: 1.3rem;
+	}
+	.job__role {
+		color: var(--ink-muted);
+		font-weight: 500;
+		margin-top: 0.15rem;
+	}
+	.job__bullets {
+		margin-top: 0.9rem;
+		padding-left: 1.2rem;
+		display: grid;
+		gap: 0.35rem;
+		font-size: 0.95rem;
+	}
+	.job__bullets li::marker {
+		color: var(--violet);
+	}
+	.job__extra {
+		margin-top: 1.25rem;
+	}
+	.job__extra-label {
+		font-size: 0.9rem;
+		font-weight: 600;
+		letter-spacing: 0.01em;
+		color: var(--ink-muted);
+	}
+	.job__projects {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		list-style: none;
+		padding: 0;
+		margin-top: 0.5rem;
+	}
+	.job__note {
+		margin-top: 1rem;
+		font-size: 0.92rem;
+	}
+</style>

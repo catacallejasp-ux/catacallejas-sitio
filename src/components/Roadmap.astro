@@ -1,0 +1,112 @@
+---
+/**
+ * «El proceso» as a step-by-step roadmap: numbered stops joined by a line.
+ * Horizontal from 64rem (one column per step), vertical below.
+ */
+interface Props {
+	titulo?: string;
+	pasos: { titulo: string; texto?: string }[];
+}
+const { titulo = 'El proceso', pasos } = Astro.props;
+---
+
+<section class="roadmap" aria-labelledby="proceso">
+	<h2 id="proceso">{titulo}</h2>
+	<ol class="roadmap__steps" style={`--steps: ${pasos.length}`}>
+		{
+			pasos.map((p, i) => (
+				<li class="step">
+					<span class="step__n" aria-hidden="true">
+						{String(i + 1).padStart(2, '0')}
+					</span>
+					<div class="step__body">
+						<h3 class="step__title">
+							<span class="visually-hidden">Paso {i + 1}: </span>
+							{p.titulo}
+						</h3>
+						{p.texto && <p class="step__text">{p.texto}</p>}
+					</div>
+				</li>
+			))
+		}
+	</ol>
+</section>
+
+<style>
+	.roadmap h2 {
+		font-size: 1.6rem;
+	}
+	.roadmap__steps {
+		position: relative;
+		display: grid;
+		gap: 1.5rem;
+		margin-top: 1.75rem;
+		padding: 0;
+		list-style: none;
+	}
+	.step {
+		position: relative;
+		display: grid;
+		grid-template-columns: 3rem 1fr;
+		gap: 1rem;
+	}
+	/* Vertical line joining the stops. */
+	.step:not(:last-child)::before {
+		content: '';
+		position: absolute;
+		left: calc(1.5rem - 1px);
+		top: 3rem;
+		bottom: -1.5rem;
+		width: 2px;
+		background: linear-gradient(var(--violet-300), var(--teal-300));
+	}
+	.step__n {
+		position: relative;
+		z-index: 1;
+		display: grid;
+		place-items: center;
+		width: 3rem;
+		height: 3rem;
+		border-radius: 999px;
+		background: var(--violet-700);
+		color: #fff;
+		font-family: var(--font-display);
+		font-weight: 700;
+	}
+	.step__body {
+		padding-top: 0.55rem;
+	}
+	.step__title {
+		font-size: 1.15rem;
+		font-weight: 700;
+	}
+	.step__text {
+		margin-top: 0.35rem;
+		color: var(--ink-muted);
+	}
+	@media (min-width: 64rem) {
+		.roadmap__steps {
+			grid-template-columns: repeat(var(--steps), minmax(0, 1fr));
+			gap: 1.25rem;
+		}
+		.step {
+			grid-template-columns: 1fr;
+			align-content: start;
+			gap: 1rem;
+		}
+		/* Horizontal line from this stop to the next. */
+		.step:not(:last-child)::before {
+			left: 3rem;
+			right: -1.25rem;
+			top: calc(1.5rem - 1px);
+			bottom: auto;
+			width: auto;
+			height: 2px;
+			background: linear-gradient(90deg, var(--violet-300), var(--teal-300));
+		}
+		.step__body {
+			padding-top: 0;
+			padding-right: 0.5rem;
+		}
+	}
+</style>

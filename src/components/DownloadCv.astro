@@ -1,0 +1,26 @@
+---
+/** «Descargar CV», with a download icon. Shows a placeholder until the PDF exists (see src/data/cv.ts). */
+import Button from './Button.astro';
+import Icon from './Icon.astro';
+import { cvPdf } from '../data/cv';
+
+interface Props {
+	variant?: 'primary' | 'ghost' | 'light';
+	label?: string;
+	/** Appends «· PDF, 103 KB». Off where the button sits in a narrow column. */
+	showSize?: boolean;
+}
+const { variant = 'primary', label = 'Descargar CV', showSize = false } = Astro.props;
+---
+
+<Button href={cvPdf?.href} variant={variant} download pendingLabel="PDF pendiente">
+	<Icon name="download" />
+	{label}{showSize && cvPdf?.size && <span class="cv-size"> · {cvPdf.size}</span>}
+</Button>
+
+<style>
+	.cv-size {
+		font-weight: 400;
+		font-size: 0.9em;
+	}
+</style>

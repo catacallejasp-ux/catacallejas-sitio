@@ -1,0 +1,69 @@
+---
+import { getCollection, render } from 'astro:content';
+import DetalleLayout from '../../../layouts/DetalleLayout.astro';
+import ProjectBoxes from '../../../components/ProjectBoxes.astro';
+import Roadmap from '../../../components/Roadmap.astro';
+import ImageCarousel from '../../../components/ImageCarousel.astro';
+
+export async function getStaticPaths() {
+	const items = (await getCollection('iniciativas')).sort(
+		(a, b) => b.data.start.getTime() - a.data.start.getTime(),
+	);
+	return items.map((item, i) => ({
+		params: { id: item.id },
+		props: {
+			item,
+			siguiente: items[(i + 1) % items.length],
+			anterior: items[(i - 1 + items.length) % items.length],
+		},
+	}));
+}
+
+const { item, siguiente, anterior } = Astro.props;
+const { data } = item;
+const { Content } = await render(item);
+
+const meta = [
+	{ label: 'Inicio', text: data.dateLabel },
+	{ label: 'Mi rol', chips: data.roles },
+	...(data.organization ? [{ label: 'Organización', text: data.organization }] : []),
+];
+---
+
+<DetalleLayout
+	title={data.title}
+	summary={data.description}
+	current="sobre-mi"
+	back={{ href: '/sobre-mi#voluntariados', text: 'Volver a Sobre mí' }}
+	results={data.results}
+	meta={meta}
+	cover={data.cover && data.coverAlt
+		? { src: data.cover, alt: data.coverAlt, focus: data.coverFocus }
+		: undefined}
+	queEs={data.queEs}
+	prev={{
+		href: `/sobre-mi/voluntariados/${anterior.id}`,
+		title: anterior.data.title,
+		label: 'Iniciativa anterior',
+	}}
+	next={{
+		href: `/sobre-mi/voluntariados/${siguiente.id}`,
+		title: siguiente.data.title,
+		label: 'Siguiente iniciativa',
+	}}
+>
+	{
+		(data.desafios.length > 0 || data.hitos.length > 0 || data.proceso.length > 0) && (
+			<Fragment slot="sections">
+				<ProjectBoxes
+					desafios={data.desafios}
+					desafiosIntro={data.desafiosIntro}
+					hitos={data.hitos}
+				/>
+				{data.proceso.length > 0 && <Roadmap pasos={data.proceso} />}
+				{data.galeria && <ImageCarousel {...data.galeria} />}
+			</Fragment>
+		)
+	}
+	<Content />
+</DetalleLayout>

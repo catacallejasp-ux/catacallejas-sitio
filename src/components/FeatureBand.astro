@@ -1,0 +1,85 @@
+---
+/** Two-column band: text and actions on one side, media (slot "media") on the other. */
+interface Props {
+	eyebrow?: string;
+	title: string;
+	text?: string;
+	headingLevel?: 2 | 3;
+	reverse?: boolean;
+	tone?: 'lavender' | 'white';
+}
+const { eyebrow, title, text, headingLevel = 2, reverse = false, tone = 'lavender' } = Astro.props;
+const Heading = headingLevel === 2 ? 'h2' : 'h3';
+---
+
+<div class:list={['band', reverse && 'band--reverse', tone === 'white' && 'band--white']}>
+	<div class="band__text">
+		{
+			Astro.slots.has('eyebrow') ? (
+				<div class="band__eyebrow">
+					<slot name="eyebrow" />
+				</div>
+			) : (
+				eyebrow && <span class="eyebrow">{eyebrow}</span>
+			)
+		}
+		<Heading class="band__title">{title}</Heading>
+		{text && <p class="band__lead">{text}</p>}
+		<slot name="text" />
+		<div class="band__actions"><slot name="actions" /></div>
+	</div>
+	<div class="band__media"><slot name="media" /></div>
+</div>
+
+<style>
+	.band {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: clamp(1.5rem, 4vw, 3rem);
+		align-items: center;
+		padding: clamp(1.5rem, 4vw, 2.5rem);
+		background: var(--lavender-100);
+		border-radius: calc(var(--radius) * 1.25);
+	}
+	@media (min-width: 900px) {
+		.band {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+		.band--reverse .band__media {
+			order: -1;
+		}
+	}
+	.band--white {
+		background: var(--surface);
+		border: 1px solid var(--line);
+	}
+	.band__text,
+	.band__media {
+		min-width: 0;
+	}
+	.band__eyebrow {
+		margin-bottom: 0.9rem;
+	}
+	/* A tag on the lavender band would disappear (same fill): give it a white chip. */
+	.band:not(.band--white) .band__eyebrow :global(.chip:not(.chip--teal)) {
+		background: var(--surface);
+	}
+	.band__title {
+		font-size: clamp(2rem, 1.3rem + 2.6vw, 3.2rem);
+		font-weight: 700;
+		letter-spacing: -0.03em;
+	}
+	.band__lead {
+		margin-top: 0.9rem;
+		color: var(--ink-muted);
+	}
+	.band__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		margin-top: 1.5rem;
+	}
+	.band__actions:empty {
+		display: none;
+	}
+</style>

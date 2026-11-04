@@ -1,0 +1,26 @@
+// Datos de +Voces en Diseño que usaba la antigua página /comunidad (archivados).
+/** +Voces en Diseño (página /comunidad, oculta por ahora). */
+export const voces = {
+	// TODO(content): URL del sitio de +Voces en Diseño.
+	sitio: undefined as string | undefined,
+	/**
+	 * Latest +Voces conversando reel, shown on / and /comunidad until there are
+	 * capitulos entries. `texto` is the post's own caption (verbatim).
+	 */
+	ultimoReel: {
+		url: 'https://www.instagram.com/reel/DfGJbuJkZM6/',
+		titulo: 'Capítulo 1',
+		texto:
+			'Gracias por acompañarnos. Acá les compartimos lo que fue el primer capítulo de +Voces Conversando; un espacio para compartir, acompañarnos y cuestionar.',
+	},
+	// TODO(content): texto «Qué es +Voces en Diseño y cuál es mi rol».
+	descripcion: undefined as string | undefined,
+	voluntariado: {
+		titulo: 'Nuestro objetivo es hacer comunidad',
+		texto:
+			'Somos mujeres 🙋🏻‍♀️ que trabajamos y/o queremos aprender de experiencia de usuario #UX, #innovación y #tecnología.',
+		// TODO(content): URL para sumarse al voluntariado.
+		url: undefined as string | undefined,
+	},
+};
+

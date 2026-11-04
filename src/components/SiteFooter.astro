@@ -1,0 +1,90 @@
+---
+/**
+ * Contact footer, at the bottom of every page: a full-width hairline divider and one centred
+ * line with the e-mail and LinkedIn links, over a soft lilac glow.
+ * Text is --violet-700: 7.02:1 on white, 5.95:1 on --violet-100 (the glow's strongest
+ * point under the text).
+ */
+import { perfil } from '../data/cv';
+---
+
+<footer id="contacto" class="footer">
+	<div class="container footer__inner">
+		<h2 class="visually-hidden">Contacto</h2>
+		<p class="footer__text">
+			¿Quieres conversar o tienes una idea? Escríbeme a <a href={`mailto:${perfil.email}`}
+				>{perfil.email}</a
+			> o sígueme en <a href={perfil.linkedin} target="_blank" rel="me noopener"
+				>LinkedIn<span class="visually-hidden"> (se abre en otra pestaña)</span></a
+			>
+		</p>
+		<p class="footer__credit">
+			<svg
+				viewBox="0 0 24 24"
+				width="18"
+				height="18"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="1.75"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				aria-hidden="true"
+				focusable="false"
+			>
+				<!-- robot -->
+				<rect x="4" y="8" width="16" height="12" rx="3"></rect>
+				<path d="M12 8V4M10 4h4M9 13v1M15 13v1M10 17h4M2 13v2M22 13v2"></path>
+			</svg>
+			Sitio diseñado y desarrollado con Astro y Claude Opus 5.5
+		</p>
+	</div>
+</footer>
+
+<style>
+	.footer {
+		margin-top: clamp(1.5rem, 4vw, 3rem);
+		padding-top: clamp(1.5rem, 4vw, 2.5rem);
+		background:
+			radial-gradient(60% 140% at 0% 100%, var(--violet-200), transparent 70%),
+			radial-gradient(40% 120% at 100% 100%, rgb(237 234 255 / 0.8), transparent 70%);
+	}
+	/* The divider spans the whole screen; the text stays in the container. */
+	.footer {
+		border-top: 1px solid var(--violet-200);
+	}
+	.footer__inner {
+		padding-block: 1.5rem 2rem;
+	}
+	.footer__text {
+		text-align: center;
+		color: var(--violet-700);
+		font-size: clamp(0.98rem, 0.9rem + 0.3vw, 1.1rem);
+		text-wrap: balance;
+	}
+	.footer__text a {
+		color: var(--violet-700);
+		font-weight: 600;
+		text-decoration: underline;
+		text-decoration-thickness: 1.5px;
+		text-underline-offset: 0.2em;
+		overflow-wrap: anywhere;
+	}
+	/* Credit line: smaller and grey (--ink-muted on the footer glow ≥ 5.7:1). */
+	.footer__credit {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.45rem;
+		margin-top: 0.75rem;
+		font-size: 0.9rem;
+		color: var(--ink-muted);
+		text-align: center;
+	}
+	.footer__credit svg {
+		flex: none;
+	}
+	.footer__text a:hover {
+		color: var(--violet-900);
+		text-decoration-thickness: 2px;
+	}
+</style>

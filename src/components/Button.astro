@@ -1,0 +1,91 @@
+---
+/**
+ * Renders an <a>. Primary = solid violet, no border. Ghost (secondary) = border only.
+ * Light = white fill for dark surfaces. Without `href` (link still missing) it renders
+ * a placeholder instead of a broken link.
+ */
+interface Props {
+	href?: string;
+	variant?: 'primary' | 'ghost' | 'light';
+	size?: 'md' | 'sm';
+	download?: boolean;
+	external?: boolean;
+	/** Adds the round arrow badge (primary/light only). */
+	arrow?: boolean;
+	/** Adds a plain trailing arrow icon, no badge. */
+	icon?: boolean;
+	/** Shown in the placeholder when href is missing. */
+	pendingLabel?: string;
+}
+const {
+	href,
+	variant = 'primary',
+	size = 'md',
+	download = false,
+	external = false,
+	arrow = false,
+	icon = false,
+	pendingLabel,
+} = Astro.props;
+import Icon from './Icon.astro';
+---
+
+{
+	href ? (
+		<a
+			class:list={['button', `button--${variant}`, size === 'sm' && 'button--sm']}
+			href={href}
+			download={download || undefined}
+			target={external ? '_blank' : undefined}
+			rel={external ? 'noopener' : undefined}
+		>
+			<slot />
+			{external && !arrow && !icon && <Icon name="external" />}
+			{icon && (
+				<svg class="button__icon" viewBox="0 0 20 20" width="20" height="20" aria-hidden="true">
+					<path
+						d={external ? 'M6 14 14 6M7 6h7v7' : 'M4 10h12M11 5l5 5-5 5'}
+						fill="none"
+						stroke="currentColor"
+						stroke-width="1.8"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					/>
+				</svg>
+			)}
+			{arrow && (
+				<span class="button__arrow" aria-hidden="true">
+					<Icon name={external ? 'external' : 'arrow-right'} />
+				</span>
+			)}
+		</a>
+	) : (
+		<span
+			class:list={['button', 'button--disabled', size === 'sm' && 'button--sm']}
+			aria-disabled="true"
+		>
+			<slot />
+			<span class="button__pending">· {pendingLabel ?? 'pendiente'}</span>
+		</span>
+	)
+}
+
+<style>
+	.button--disabled {
+		box-shadow: inset 0 0 0 1.5px #a79fc8;
+		color: var(--ink-muted);
+		background: transparent;
+		cursor: not-allowed;
+	}
+	.button__icon {
+		flex: none;
+		transition: transform 0.15s ease;
+	}
+	.button:hover .button__icon {
+		transform: translateX(3px);
+	}
+	.button__pending {
+		font-size: 0.9rem;
+		font-weight: 400;
+	}
+</style>

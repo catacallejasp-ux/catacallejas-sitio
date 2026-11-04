@@ -1,0 +1,298 @@
+---
+/**
+ * «Herramientas y especialidades» as a dashboard of glass tiles, in the style of the
+ * home's TrajectoryBento (same glass, tones and blobs). One tile per specialty:
+ * icon, name and its tools as chips.
+ * Layout from Cata's sketch: a big heading tile, small tiles to its right, a wide
+ * tile at the bottom and a tall one on the right.
+ */
+import { especialidades } from '../data/cv';
+
+/** Visual treatment per tile, in the order of `especialidades`. */
+const estilos = [
+	{
+		area: 'design',
+		tone: 'lilac',
+		// pen tool
+		icon: '<path d="m16 4 9 9-5 13H12L7 13Z"/><circle cx="16" cy="16" r="2.5"/><path d="M16 4v9.5M10 28h12"/>',
+	},
+	{
+		area: 'research',
+		tone: 'sky',
+		// magnifier
+		icon: '<circle cx="14" cy="14" r="8"/><path d="m20 20 7 7"/>',
+	},
+	{
+		area: 'data',
+		tone: 'deep',
+		// bar chart
+		icon: '<path d="M5 27h22M9 27V17M15 27V9M21 27V13"/>',
+	},
+	{
+		area: 'ai',
+		tone: 'frost',
+		// sparkles
+		icon: '<path d="M14 5c1 5 3 7 8 8-5 1-7 3-8 8-1-5-3-7-8-8 5-1 7-3 8-8Z"/><path d="M24 20c.5 2 1.5 3 3.5 3.5-2 .5-3 1.5-3.5 3.5-.5-2-1.5-3-3.5-3.5 2-.5 3-1.5 3.5-3.5Z"/>',
+	},
+	{
+		area: 'methods',
+		tone: 'sky',
+		// cycle
+		icon: '<path d="M26 12a10 10 0 0 0-18-2M6 20a10 10 0 0 0 18 2"/><path d="M8 4v6h6M24 28v-6h-6"/>',
+	},
+	{
+		area: 'team',
+		tone: 'lilac',
+		// people
+		icon: '<circle cx="11" cy="11" r="4"/><circle cx="22" cy="12" r="3"/><path d="M3 26a8 8 0 0 1 16 0M19 20a6 6 0 0 1 10 4"/>',
+	},
+];
+
+const tiles = especialidades.map((e, i) => ({
+	...estilos[i % estilos.length],
+	label: e.titulo,
+	// Each tool as its own chip, starting with a capital («wireframing» → «Wireframing»).
+	items: e.texto
+		.split(',')
+		.map((t) => t.trim())
+		.map((t) => t.charAt(0).toLocaleUpperCase('es') + t.slice(1)),
+}));
+---
+
+<section class="skills-bento" aria-labelledby="herramientas">
+	<span class="sb__blob sb__blob--violet" aria-hidden="true"></span>
+	<span class="sb__blob sb__blob--teal" aria-hidden="true"></span>
+	<div class="sb__grid">
+		<div class="tile tile--frost tile--main">
+			<h2 id="herramientas" class="tile__heading">Herramientas y especialidades</h2>
+			<p class="tile__text">Lo que uso para diseñar, investigar, medir y trabajar en equipo.</p>
+		</div>
+		{
+			tiles.map((t) => (
+				<div class:list={['tile', `tile--${t.tone}`, `tile--${t.area}`]}>
+					<div class="tile__head">
+						<svg
+							class="tile__icon"
+							viewBox="0 0 32 32"
+							width="30"
+							height="30"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="1.75"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							aria-hidden="true"
+						>
+							<Fragment set:html={t.icon} />
+						</svg>
+						<h3 class="tile__title">{t.label}</h3>
+					</div>
+					<ul class="tile__chips">
+						{t.items.map((item) => (
+							<li class="tile__chip">{item}</li>
+						))}
+					</ul>
+				</div>
+			))
+		}
+	</div>
+</section>
+
+<style>
+	.skills-bento {
+		position: relative;
+		isolation: isolate;
+	}
+	.sb__blob {
+		position: absolute;
+		z-index: -1;
+		border-radius: 50%;
+		filter: blur(70px);
+		opacity: 0.6;
+		pointer-events: none;
+		animation: sb-drift 20s ease-in-out infinite alternate;
+	}
+	.sb__blob--violet {
+		width: min(40vw, 480px);
+		aspect-ratio: 1.2;
+		left: 4%;
+		top: 0;
+		background: var(--violet-300);
+	}
+	.sb__blob--teal {
+		width: min(34vw, 420px);
+		aspect-ratio: 1;
+		right: 10%;
+		bottom: -5%;
+		background: var(--teal-300);
+		animation-direction: alternate-reverse;
+	}
+	@keyframes sb-drift {
+		to {
+			transform: translate(6%, -8%) scale(1.1);
+		}
+	}
+
+	.sb__grid {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+	@media (min-width: 640px) {
+		.sb__grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			grid-template-areas:
+				'main main'
+				'design research'
+				'data ai'
+				'methods methods'
+				'team team';
+		}
+	}
+	/* Desktop, after the sketch: heading tile and two small tiles on top, wide tiles
+	   below on the left, two tall tiles on the right. The heading tile is one row
+	   high, so there is no empty space above the title. */
+	@media (min-width: 1000px) {
+		.sb__grid {
+			/* The two right columns hold the tall tiles; wider so their titles fit. */
+			grid-template-columns: repeat(4, minmax(0, 1fr)) repeat(2, minmax(0, 1.25fr));
+			grid-template-areas:
+				'main main design design ai ai'
+				'research research research research data team'
+				'methods methods methods methods data team';
+		}
+	}
+	@media (min-width: 640px) {
+		.tile--main {
+			grid-area: main;
+		}
+		.tile--design {
+			grid-area: design;
+		}
+		.tile--research {
+			grid-area: research;
+		}
+		.tile--data {
+			grid-area: data;
+		}
+		.tile--ai {
+			grid-area: ai;
+		}
+		.tile--methods {
+			grid-area: methods;
+		}
+		.tile--team {
+			grid-area: team;
+		}
+	}
+
+	/* Glass tile (same recipe as TrajectoryBento) */
+	.tile {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		min-height: 9rem;
+		padding: clamp(1.25rem, 2.5vw, 1.6rem);
+		border-radius: var(--radius);
+		border: 1px solid rgb(255 255 255 / 0.9);
+		background: var(--glass);
+		box-shadow:
+			inset 0 1px 0 #fff,
+			0 18px 40px -22px rgb(65 51 166 / 0.35);
+		-webkit-backdrop-filter: blur(14px) saturate(140%);
+		backdrop-filter: blur(14px) saturate(140%);
+		color: var(--ink);
+	}
+	.tile--frost {
+		--glass: rgb(255 255 255 / 0.6);
+	}
+	.tile--lilac {
+		--glass: rgb(218 212 255 / 0.6);
+	}
+	.tile--sky {
+		--glass: rgb(189 233 239 / 0.6);
+	}
+	.tile--deep {
+		--glass: rgb(65 51 166 / 0.92);
+		border-color: rgb(255 255 255 / 0.25);
+		box-shadow:
+			inset 0 1px 0 rgb(255 255 255 / 0.3),
+			0 18px 40px -22px rgb(65 51 166 / 0.6);
+		color: #fff;
+	}
+	@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+		.tile--frost {
+			--glass: #fff;
+		}
+		.tile--lilac {
+			--glass: var(--violet-100);
+		}
+		.tile--sky {
+			--glass: var(--teal-100);
+		}
+	}
+
+	.tile--main {
+		justify-content: center;
+	}
+	.tile__heading {
+		font-size: clamp(1.6rem, 1.2rem + 1.4vw, 2.3rem);
+		font-weight: 700;
+		letter-spacing: -0.03em;
+		max-width: 14ch;
+	}
+	.tile__text {
+		color: var(--ink-muted);
+		max-width: 32ch;
+	}
+	.tile__head {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+	.tile__icon {
+		flex: none;
+		color: var(--violet-700);
+	}
+	.tile__title {
+		font-size: 1.1rem;
+		font-weight: 600;
+		letter-spacing: -0.01em;
+	}
+	.tile--deep .tile__icon {
+		color: var(--teal-200);
+	}
+	.tile__chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.45rem;
+		padding: 0;
+		list-style: none;
+	}
+	.tile__chip {
+		padding: 0.35rem 0.8rem;
+		border-radius: 999px;
+		background: rgb(255 255 255 / 0.8);
+		color: var(--violet-800);
+		font-size: 0.9rem;
+		font-weight: 500;
+	}
+	.tile--deep .tile__chip {
+		background: rgb(255 255 255 / 0.14);
+		color: #fff;
+	}
+	/* The tall tile stacks its tools one per line. */
+	@media (min-width: 1000px) {
+		.tile--data .tile__chips,
+		.tile--team .tile__chips {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.sb__blob {
+			animation: none;
+		}
+	}
+</style>

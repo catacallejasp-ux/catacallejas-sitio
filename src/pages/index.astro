@@ -1,0 +1,303 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import LogoMarquee from '../components/LogoMarquee.astro';
+import DoorCard from '../components/DoorCard.astro';
+import FeatureBand from '../components/FeatureBand.astro';
+import DeviceMockup from '../components/DeviceMockup.astro';
+import Button from '../components/Button.astro';
+import TrajectoryBento from '../components/TrajectoryBento.astro';
+import retrato from '../assets/cata-ilustracion.png';
+import { perfil, logosClientes, pasosDemo, revisaTuPitch, postsLinkedIn } from '../data/cv';
+import LinkedInPosts from '../components/LinkedInPosts.astro';
+import { personJsonLd } from '../lib/seo';
+---
+
+<BaseLayout
+	title={`${perfil.nombre} · ${perfil.cargo}`}
+	description="Diseño productos digitales que mejoran la vida de las personas y fortalecen los objetivos de las organizaciones. Desde Valparaíso, con un pie en el contenido y otro en el producto."
+	jsonLd={personJsonLd(Astro.site)}
+>
+	<div class="home">
+		<Hero
+			before="Hola, soy"
+			highlight="Cata Callejas"
+			after="y te ayudo a hacer que las cosas pasen"
+			primaryCta={{ href: '/artefactos', label: 'Revisar artefactos' }}
+			secondaryCta={{ href: '#contacto', label: 'Conversemos' }}
+			portrait={{ src: retrato, alt: 'Ilustración de Catalina Callejas' }}
+		/>
+
+		<LogoMarquee label="He trabajado con:" logos={logosClientes} />
+
+		<!-- Tres puertas -->
+		<section class="section doors" aria-labelledby="puertas">
+			<span class="doors__blob doors__blob--violet" aria-hidden="true"></span>
+			<span class="doors__blob doors__blob--teal" aria-hidden="true"></span>
+			<span class="doors__blob doors__blob--lilac" aria-hidden="true"></span>
+			<div class="container">
+				<div class="doors__panel">
+					<h2 id="puertas" class="visually-hidden">Qué puedes encontrar aquí</h2>
+					<ul class="grid grid--3 plain doors__grid">
+						<li>
+							<DoorCard
+								title="Hablando"
+								text="Charlas y recursos descargables para trabajar mejor en diseño y producto."
+								href="/hablando-nuestro-trabajo"
+								linkLabel="Ir a Hablando"
+								tone="lilac"
+								icon="book"
+							/>
+						</li>
+						<li>
+							<DoorCard
+								title="Artefactos"
+								text="Artefactos que puedes usar ahora, como revisar tu pitch con feedback concreto."
+								href="/artefactos"
+								linkLabel="Ir a Artefactos"
+								tone="lilac"
+								icon="tool"
+							/>
+						</li>
+						<li>
+							<DoorCard
+								title="Conversemos"
+								text="Sesiones 1:1, talleres para equipos y colaboraciones. Cuéntame qué necesitas."
+								href="#contacto"
+								linkLabel="Escríbeme"
+								tone="sky"
+								shape="box"
+								icon="chat"
+							/>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</section>
+
+		<!-- Destacado · Artefacto -->
+		<section class="section section--flush">
+			<div class="container">
+				<FeatureBand
+					eyebrow="Destacado · Artefacto"
+					title="Revisa tu pitch"
+					text="Cuéntale tu idea y a quién se la vas a presentar, y recibe una guía para antes, durante y después de tu presentación: qué decir, cómo ordenarlo y cómo llegar con calma y confianza."
+					tone="white"
+				>
+					<Fragment slot="actions">
+						<Button href={revisaTuPitch.url} external icon>Usar artefacto</Button>
+					</Fragment>
+					<Fragment slot="media">
+						<DeviceMockup
+							address="claude.ai/artifact · Hablando nuestro trabajo"
+							label="Demostración paso a paso de la herramienta «Hablando nuestro trabajo», en escritorio."
+							steps={pasosDemo}
+						/>
+					</Fragment>
+				</FeatureBand>
+			</div>
+		</section>
+
+		<!-- Comunidad y eventos -->
+		<section
+			class="section section--flush section--tight community-band"
+			aria-labelledby="comunidad-eventos"
+		>
+			<div class="container">
+				<h2 id="comunidad-eventos" class="section-title band-title">
+					Lo que estoy <span class="gradient-text doing"
+						>haciendo<svg
+							class="doing__arrow"
+							viewBox="0 0 80 110"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="3"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							aria-hidden="true"
+							focusable="false"
+							><path
+								class="doing__line"
+								pathLength="1"
+								d="M4 22C22 8 46 10 42 26s-22 8-13-4S62 14 63 46c0.5 18 0 34 0 52"></path><path
+								d="M54 89l9 9 9-9"></path></svg
+						></span
+					>
+				</h2>
+				<LinkedInPosts posts={postsLinkedIn} />
+			</div>
+		</section>
+
+		<TrajectoryBento />
+	</div>
+</BaseLayout>
+
+<style>
+	/*
+		Home rhythm: every section is separated by the same gap (--home-gap), measured
+		between what you see (hero content, logo band, folders, cards, footer line).
+		Section paddings are zeroed here so the flex gap is the only spacing.
+	*/
+	.home {
+		--home-gap: clamp(3rem, 6vw, 5rem);
+		display: flex;
+		flex-direction: column;
+		gap: var(--home-gap);
+		padding-bottom: var(--home-gap);
+	}
+	.home > :global(section) {
+		padding-block: 0;
+	}
+	.home > :global(.hero) {
+		padding-top: clamp(1.5rem, 3vw, 2.5rem);
+	}
+	.home > :global(.logos .logos__inner) {
+		padding-block: 0;
+	}
+	:global(body:has(.home) .footer) {
+		margin-top: 0;
+		padding-top: 0;
+	}
+	.plain {
+		list-style: none;
+		padding: 0;
+	}
+	/*
+		Folder cards float over soft, slowly drifting colour blobs (no container, no
+		hard edges) so the glass has something to blur. Horizontal overflow is clipped
+		so the blobs never cause sideways scrolling; vertically they fade out freely.
+	*/
+	.doors {
+		position: relative;
+		isolation: isolate;
+		overflow-x: clip;
+		padding-top: clamp(1.75rem, 3.5vw, 3rem);
+	}
+	.doors__panel {
+		position: relative;
+	}
+	/* Neighbours paint above the blobs' blur, which spills vertically. */
+	:global(.logos),
+	.doors + section {
+		position: relative;
+		z-index: 1;
+	}
+	.doors__blob {
+		position: absolute;
+		z-index: -1;
+		border-radius: 50%;
+		filter: blur(70px);
+		opacity: 0.75;
+		animation: blob-drift 18s ease-in-out infinite alternate;
+		pointer-events: none;
+	}
+	.doors__blob--violet {
+		width: min(42vw, 560px);
+		aspect-ratio: 1.3;
+		left: 18%;
+		top: 14%;
+		background: var(--violet-300);
+	}
+	.doors__blob--teal {
+		width: min(36vw, 480px);
+		aspect-ratio: 1.1;
+		right: 6%;
+		top: 12%;
+		background: var(--teal-300);
+		animation-duration: 22s;
+		animation-direction: alternate-reverse;
+	}
+	.doors__blob--lilac {
+		width: min(30vw, 400px);
+		aspect-ratio: 1;
+		left: 2%;
+		top: 8%;
+		background: var(--violet-200);
+		animation-duration: 26s;
+	}
+	@keyframes blob-drift {
+		0% {
+			transform: translate(0, 0) scale(1);
+		}
+		50% {
+			transform: translate(8%, -10%) scale(1.12);
+		}
+		100% {
+			transform: translate(-6%, 8%) scale(0.94);
+		}
+	}
+	@media (max-width: 899px) {
+		.doors__blob--violet {
+			width: 80vw;
+			left: -10%;
+			top: 40%;
+		}
+		.doors__blob--teal {
+			width: 70vw;
+			right: -20%;
+			top: 10%;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.doors__blob {
+			animation: none;
+		}
+	}
+	.doors__grid {
+		gap: clamp(1rem, 2.5vw, 1.75rem);
+	}
+	.doors__grid > li + li {
+		/* Room for the tab of the next folder when the grid stacks. */
+		margin-top: 0;
+	}
+	.section--flush {
+		padding-top: 0;
+	}
+	/* Shorter gap before the trajectory bento. */
+	.section--tight {
+		padding-bottom: clamp(2.5rem, 5vw, 4rem);
+	}
+	.band-title {
+		position: relative;
+		max-width: none;
+		margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
+	}
+	/*
+		Decorative hand-drawn arrow (teal, like the event poster): starts right after
+		«haciendo» and curls down to the posts.
+	*/
+	.doing {
+		position: relative;
+		display: inline-block;
+	}
+	.doing__arrow {
+		position: absolute;
+		left: calc(100% + 0.25rem);
+		top: 0.15em;
+		width: clamp(2.5rem, 4.5vw, 4rem);
+		height: auto;
+		color: var(--teal-500);
+		overflow: visible;
+		pointer-events: none;
+	}
+	/* Small phones: «haciendo» reaches the right edge, so the arrow starts a little
+	   over the word's end and is narrower, to stay inside the screen. */
+	@media (max-width: 30rem) {
+		.doing__arrow {
+			left: calc(100% - 0.25rem);
+			width: 1.6rem;
+		}
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		.doing__line {
+			stroke-dasharray: 1;
+			stroke-dashoffset: 1;
+			animation: doing-draw 1.2s 0.3s ease-out forwards;
+		}
+		@keyframes doing-draw {
+			to {
+				stroke-dashoffset: 0;
+			}
+		}
+	}
+</style>
