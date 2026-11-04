@@ -22,9 +22,15 @@ pnpm dev        # http://localhost:4321
 | `/sobre-mi/proyectos/<proyecto>`       | Cada proyecto                                      | `src/pages/sobre-mi/proyectos/[id].astro`      |
 | `/sobre-mi/voluntariados/<iniciativa>` | Cada voluntariado o iniciativa                     | `src/pages/sobre-mi/voluntariados/[id].astro`  |
 
-`/hablando` no se usa: es el subsitio de la charla (catacallejas.cl/hablando). Las direcciones
+`/hablando` es el subsitio de la charla: sus archivos están tal cual en `public/hablando/` y no
+los genera Astro. Las direcciones
 antiguas (`/aprender`, `/herramientas`, `/proyectos/…`, `/comunidad/…`, `/casos/…`) redirigen a
 las nuevas; están en `redirects`, en `astro.config.mjs`.
+
+## Publicación
+
+Cada `push` a `main` compila y publica el sitio en https://catacallejas.cl con GitHub Pages
+(`.github/workflows/deploy.yml`). El dominio está en `public/CNAME`.
 
 ## Dónde se edita el contenido
 
