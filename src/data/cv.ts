@@ -8,7 +8,6 @@ export const perfil = {
 	nombre: 'Catalina Callejas',
 	nombreCorto: 'Cata Callejas',
 	cargo: 'UX & Product Designer',
-	ciudad: 'Valparaíso',
 	email: 'cata.callejasp@gmail.com',
 	linkedin: 'https://www.linkedin.com/in/catalina-callejas/',
 	// The phone is in the printed CV only; it is not published on the site.
@@ -59,36 +58,51 @@ export const certificaciones: { titulo: string; emisor: string; anio?: string; u
 	{ titulo: 'UX-UI y UX Writing', emisor: 'Coder House', anio: '2022' },
 ];
 
-export const voluntariados: {
-	titulo: string;
-	organizacion: string;
-	periodo: string;
-	texto: string;
-	/** Detail page under /sobre-mi/voluntariados/, when there is one. */
-	href?: string;
+/**
+ * Recommendations from LinkedIn, shown on /sobre-mi («Recomendaciones»). Quoted as
+ * written; `destacado` is the sentence highlighted in the quote (it must appear,
+ * exactly, in one of the paragraphs).
+ */
+export const recomendaciones: {
+	nombre: string;
+	/** Shown in the avatar circle. */
+	iniciales: string;
+	/** Role and company. */
+	cargo: string;
+	destacado: string;
+	/** Paragraphs, as written. */
+	texto: string[];
 }[] = [
 	{
-		titulo: 'Coordinadora Track regiones',
-		organizacion: '+Mujeres en UX Chile',
-		periodo: '2023 – 2025',
-		texto:
-			'Coordinó un equipo de voluntarias en un programa piloto regional en la región de Valparaíso.',
-		href: '/sobre-mi/voluntariados/mujeres-en-ux-regiones',
+		nombre: 'Carolina S. Robles',
+		iniciales: 'CR',
+		cargo: 'Digital Chapter Lead UX & Design Excellence · Latam Cargo',
+		destacado: 'Cata no solo hace bien su trabajo, sino que eleva el trabajo de quienes la rodean.',
+		texto: [
+			'Tuve la suerte de trabajar con Catalina en 2Brains y no me cabe duda de que es de esas personas que marcan la diferencia en un equipo. Su curiosidad, iniciativa y energía son contagiosas, y su versatilidad la ha llevado a brillar en distintos roles como UX Writer, Product Designer y UX Researcher. Siempre está un paso adelante, proponiendo, investigando y conectando los puntos con una mirada estratégica y humana a la vez.',
+			'Cata no solo hace bien su trabajo, sino que eleva el trabajo de quienes la rodean. Tiene habilidades de liderazgo naturales y una capacidad poco común para adaptarse, aprender y sumar desde donde se le necesite. Me encantaría volver a trabajar con ella en el futuro, y quien le abra la puerta a su próximo desafío se lleva un verdadero talento ✨',
+		],
 	},
 	{
-		titulo: 'Coordinadora',
-		organizacion: 'Círculo de Mujeres 2Brains',
-		periodo: '2022 – 2025',
-		texto: 'Ciclo de conversatorios, espacios de diálogo, mentoría y apoyo profesional.',
-		href: '/sobre-mi/voluntariados/circulo-de-mujeres',
+		nombre: 'Bárbara Letelier Soto',
+		iniciales: 'BL',
+		cargo: 'Product Lead en Creditú',
+		destacado: 'movilizando una estrategia completa desde cero',
+		texto: [
+			'Trabajé con Cata durante una asesoría para crear lineamientos de UX Content. Su trabajo fue muy profesional, cercano y centrado en el cliente, tanto en el cliente de producto como en nosotros y nuestras necesidades. Observé muy de cerca sus habilidades en investigación, su capacidad de priorizar, involucrar a los equipos y conectar con las personas, generando aprendizajes de amplio valor y movilizando una estrategia completa desde cero.',
+			'Creo que tiene mucho que aportar en el área de diseño de Producto, su experiencia como docente y su capacidad resiliente de reconvertirse y mantenerse siempre a la vanguardia en su formación, la hacen una persona muy valiosa para cualquier empresa.',
+		],
 	},
 	{
-		titulo: 'Líder de equipo',
-		organizacion: 'Hackatón AI 2023 · 2Brains',
-		periodo: '2023',
-		texto:
-			'Lideró el equipo que creó SOFIA, una plataforma de planificación de clases con ChatGPT, y ganó el premio a la «Mejor idea».',
-		href: '/sobre-mi/voluntariados/hackaton-ai-2023',
+		nombre: 'Francisca Choy',
+		iniciales: 'FC',
+		cargo: 'UX/UI Designer en Copec Wind Garage',
+		destacado: 'Todos deberían tener una Cata en sus equipos',
+		texto: [
+			'Tuve la oportunidad de trabajar con Cata y es una increíble profesional. Es muy rápida para entender flujos y proponer mejoras en los diseños. Sus comentarios siempre son muy acertados logrando destrabar y mejorar flujos y prototipos. Tiene una gran habilidad en mejorar los copys y en considerar al usuario en todo momento para comunicarle lo que ocurre en la plataforma.',
+			'En cuanto a lo personal, es una persona muy cercana y preocupada por sus pares. Siempre atenta si algo ocurre y proactiva para generar espacios para enseñar y compartir sus habilidades con otros.',
+			'Todos deberían tener una Cata en sus equipos ✨',
+		],
 	},
 ];
 
@@ -191,14 +205,16 @@ export const novedades: {
 	{
 		imagen: '9punto5-2026.png',
 		alt: 'Gráfica: Voy a facilitar en 9punto5. 9punto5, 10 años. Catalina Callejas. 12, 13 y 14 de noviembre de 2026, Valdivia, Chile.',
-		texto: 'Este año, al igual que en 2025, estaré facilitando espacios en 9punto5, Valdivia. Más información en',
+		texto:
+			'Este año, al igual que en 2025, estaré facilitando espacios en 9punto5, Valdivia. Más información en',
 		enlace: { href: 'https://9punto5.cl/', texto: '9punto5.cl' },
 		cierre: '. ¡Nos vemos allá! 💚',
 	},
 	{
 		imagen: 'voces-conversando-2026.png',
 		alt: 'Gráfica de +Voces conversando Chile: «Y a ti, ¿cómo te está yendo?». Una conversación sincera sobre la industria de la tecnología y el diseño en Chile con Catalina Callejas, facilitadora, y Bárbara Letelier, Product Lead en Creditú. 29 de octubre, 19 h, transmisión en vivo por Instagram.',
-		texto: 'En mi voluntariado con +Voces en Diseño, soy facilitadora del nuevo espacio «+Voces conversando», que ya tuvo su primera versión el pasado 29/10 en Instagram Live. Míralo completo en',
+		texto:
+			'En mi voluntariado con +Voces en Diseño, soy facilitadora del nuevo espacio «+Voces conversando», que ya tuvo su primera versión el pasado 29/10 en Instagram Live. Míralo completo en',
 		enlace: { href: 'https://www.instagram.com/reel/DfGJbuJkZM6/', texto: 'Instagram' },
 		cierre: '.',
 	},

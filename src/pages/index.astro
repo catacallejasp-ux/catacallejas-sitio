@@ -15,7 +15,7 @@ import { personJsonLd } from '../lib/seo';
 
 <BaseLayout
 	title={`${perfil.nombre} · ${perfil.cargo}`}
-	description="Diseño productos digitales que mejoran la vida de las personas y fortalecen los objetivos de las organizaciones. Desde Valparaíso, con un pie en el contenido y otro en el producto."
+	description="Diseño productos digitales que mejoran la vida de las personas y fortalecen los objetivos de las organizaciones. Con un pie en el contenido y otro en el producto."
 	jsonLd={personJsonLd(Astro.site)}
 >
 	<div class="home">
@@ -81,7 +81,7 @@ import { personJsonLd } from '../lib/seo';
 					eyebrow="Destacado · Artefacto"
 					title="Revisa tu pitch"
 					text="Cuéntale tu idea y a quién se la vas a presentar, y recibe una guía para antes, durante y después de tu presentación: qué decir, cómo ordenarlo y cómo llegar con calma y confianza."
-					tone="white"
+					tone="plain"
 				>
 					<Fragment slot="actions">
 						<Button href={revisaTuPitch.url} external icon>Usar artefacto</Button>

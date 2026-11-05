@@ -96,18 +96,43 @@ const nombre = (i: number) => numerados.flatMap((g) => g.pasos).find((p) => p.n 
 			};
 		};
 
-		// The arrowhead is not part of the stroke animation, so each line gets it only
-		// when the stroke reaches its end. Timings mirror the CSS below: delay
-		// order × 0.35s + 0.25s, duration 0.45s (0.9s for the loop).
+		// Each line is drawn by a Web Animation on its stroke; its arrowhead is added
+		// when that same animation finishes, so the tip can never show before the line
+		// reaches it. Line i starts at order × 0.35s + 0.25s after the reveal (just after
+		// its step card); 0.45s long, 0.9s for the loop. A redraw (resize, fonts
+		// loading) resumes each line where it was instead of restarting it.
 		let shownAt: number | undefined = reduce ? 0 : undefined;
-		const arm = (el: SVGPathElement) => {
-			if (shownAt === undefined) return; // armed again by show()
-			const o = Number(el.dataset.order);
-			const ends = shownAt + (o * 0.35 + 0.25 + ('loop' in el.dataset ? 0.9 : 0.45)) * 1000;
-			const set = () => el.setAttribute('marker-end', 'url(#flow-arrow)');
-			const wait = ends - performance.now();
-			if (reduce || wait <= 0) set();
-			else setTimeout(set, wait);
+		const finish = (el: SVGPathElement) => {
+			el.style.strokeDashoffset = '0';
+			// The loop is dashed; it is drawn solid and gets its dashes at the end.
+			el.style.strokeDasharray = 'loop' in el.dataset ? '6 6' : 'none';
+			el.setAttribute('marker-end', 'url(#flow-arrow)');
+		};
+		const animate = (el: SVGPathElement) => {
+			const len = el.getTotalLength();
+			if (shownAt === undefined) {
+				// Not revealed yet: hidden until show() animates it.
+				el.style.strokeDasharray = `${len} ${len}`;
+				el.style.strokeDashoffset = String(len);
+				return;
+			}
+			const delay = (Number(el.dataset.order) * 0.35 + 0.25) * 1000;
+			const duration = 'loop' in el.dataset ? 900 : 450;
+			const elapsed = performance.now() - shownAt;
+			if (reduce || elapsed >= delay + duration) return finish(el);
+			el.style.strokeDasharray = `${len} ${len}`;
+			const anim = el.animate([{ strokeDashoffset: len }, { strokeDashoffset: 0 }], {
+				delay: delay - elapsed, // negative when resuming after a redraw
+				duration,
+				easing: 'ease',
+				fill: 'both',
+			});
+			anim.finished
+				.then(() => {
+					finish(el);
+					anim.cancel();
+				})
+				.catch(() => {}); // removed by a redraw
 		};
 		const draw = () => {
 			svg.querySelectorAll('path.flow__path').forEach((p) => p.remove());
@@ -186,11 +211,8 @@ const nombre = (i: number) => numerados.flatMap((g) => g.pasos).find((p) => p.n 
 				el.setAttribute('class', `flow__path${p.loop ? ' flow__path--loop' : ''}`);
 				el.dataset.order = String(p.order);
 				if (p.loop) el.dataset.loop = '';
-				el.style.setProperty('--o', String(p.order));
 				svg.append(el);
-				const len = el.getTotalLength();
-				el.style.setProperty('--len', String(len));
-				arm(el);
+				animate(el);
 			}
 		};
 
@@ -201,7 +223,7 @@ const nombre = (i: number) => numerados.flatMap((g) => g.pasos).find((p) => p.n 
 			if (shownAt !== undefined && !reduce) return;
 			root.classList.add('is-visible');
 			shownAt = performance.now();
-			svg.querySelectorAll<SVGPathElement>('path.flow__path').forEach(arm);
+			svg.querySelectorAll<SVGPathElement>('path.flow__path').forEach(animate);
 			window.removeEventListener('scroll', check);
 			io?.disconnect();
 		};
@@ -235,8 +257,11 @@ const nombre = (i: number) => numerados.flatMap((g) => g.pasos).find((p) => p.n 
 		padding-top: 2.75rem; /* room for the loop that runs over the groups */
 		color: var(--ink);
 	}
+	/* Lines sit over the group frames and cards (they start and end at the cards'
+	   edges, so they never cover text); the loop label sits over the lines. */
 	.flow__lines {
 		position: absolute;
+		z-index: 2;
 		inset: 0;
 		pointer-events: none;
 		color: var(--violet-400);
@@ -254,7 +279,7 @@ const nombre = (i: number) => numerados.flatMap((g) => g.pasos).find((p) => p.n 
 	}
 	.flow__loop-label {
 		position: absolute;
-		z-index: 2;
+		z-index: 3;
 		transform: translate(-50%, -50%);
 		padding: 0.25rem 0.75rem;
 		border-radius: 999px;
@@ -350,7 +375,7 @@ const nombre = (i: number) => numerados.flatMap((g) => g.pasos).find((p) => p.n 
 		color: var(--ink);
 	}
 
-	/* Reveal: steps one by one, each arrow drawn right after its step. */
+	/* Reveal: steps one by one; each line is drawn by the script right after its step. */
 	.is-enhanced .flow__step,
 	.is-enhanced .flow__loop-label {
 		opacity: 0;
@@ -364,15 +389,6 @@ const nombre = (i: number) => numerados.flatMap((g) => g.pasos).find((p) => p.n 
 		transform: translate(-50%, -30%);
 		--i: 7.2;
 	}
-	.is-enhanced :global(.flow__path) {
-		stroke-dasharray: var(--len) var(--len);
-		stroke-dashoffset: var(--len);
-		transition: stroke-dashoffset 0.45s ease;
-		transition-delay: calc(var(--o) * 0.35s + 0.25s);
-	}
-	.is-enhanced :global(.flow__path--loop) {
-		transition-duration: 0.9s;
-	}
 	.is-visible .flow__step {
 		opacity: 1;
 		transform: none;
@@ -381,28 +397,10 @@ const nombre = (i: number) => numerados.flatMap((g) => g.pasos).find((p) => p.n 
 		opacity: 1;
 		transform: translate(-50%, -50%);
 	}
-	.is-visible :global(.flow__path) {
-		stroke-dashoffset: 0;
-	}
-	/* Once drawn, the loop gets its dashes back. */
-	.is-visible :global(.flow__path--loop) {
-		animation: flow-dash 0s calc(var(--o) * 0.35s + 1.2s) forwards;
-	}
-	@keyframes flow-dash {
-		to {
-			stroke-dasharray: 6 6;
-		}
-	}
 	@media (prefers-reduced-motion: reduce) {
 		.is-enhanced .flow__step,
-		.is-enhanced .flow__loop-label,
-		.is-enhanced :global(.flow__path) {
+		.is-enhanced .flow__loop-label {
 			transition: none;
-			animation: none;
-		}
-		.is-enhanced :global(.flow__path--loop) {
-			stroke-dasharray: 6 6;
-			stroke-dashoffset: 0;
 		}
 	}
 </style>

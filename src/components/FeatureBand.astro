@@ -6,13 +6,21 @@ interface Props {
 	text?: string;
 	headingLevel?: 2 | 3;
 	reverse?: boolean;
-	tone?: 'lavender' | 'white';
+	/** `plain`: no panel, the band sits straight on the section (home page). */
+	tone?: 'lavender' | 'white' | 'plain';
 }
 const { eyebrow, title, text, headingLevel = 2, reverse = false, tone = 'lavender' } = Astro.props;
 const Heading = headingLevel === 2 ? 'h2' : 'h3';
 ---
 
-<div class:list={['band', reverse && 'band--reverse', tone === 'white' && 'band--white']}>
+<div
+	class:list={[
+		'band',
+		reverse && 'band--reverse',
+		tone === 'white' && 'band--white',
+		tone === 'plain' && 'band--plain',
+	]}
+>
 	<div class="band__text">
 		{
 			Astro.slots.has('eyebrow') ? (
@@ -53,6 +61,11 @@ const Heading = headingLevel === 2 ? 'h2' : 'h3';
 		background: var(--surface);
 		border: 1px solid var(--line);
 	}
+	/* No panel: no fill or border, and the text lines up with the rest of the page. */
+	.band--plain {
+		background: transparent;
+		padding-inline: 0;
+	}
 	.band__text,
 	.band__media {
 		min-width: 0;
@@ -61,7 +74,7 @@ const Heading = headingLevel === 2 ? 'h2' : 'h3';
 		margin-bottom: 0.9rem;
 	}
 	/* A tag on the lavender band would disappear (same fill): give it a white chip. */
-	.band:not(.band--white) .band__eyebrow :global(.chip:not(.chip--teal)) {
+	.band:not(.band--white, .band--plain) .band__eyebrow :global(.chip:not(.chip--teal)) {
 		background: var(--raised);
 	}
 	.band__title {

@@ -8,5 +8,4 @@ bullets:
   - MVP de la plataforma generativa con IA Content Velocity Manager.
   - Creación, rediseño y documentación de Design System.
   - Rediseño de la plataforma visualizadora de audiencias.
-projects: [cencosud]
 ---

@@ -9,7 +9,8 @@ export function personJsonLd(site: URL | undefined) {
 		alternateName: perfil.nombreCorto,
 		jobTitle: perfil.cargo,
 		email: `mailto:${perfil.email}`,
-		address: { '@type': 'PostalAddress', addressLocality: perfil.ciudad, addressCountry: 'CL' },
+		// Country only: no city is published.
+		address: { '@type': 'PostalAddress', addressCountry: 'CL' },
 		sameAs: [perfil.linkedin],
 		...(site ? { url: site.href } : {}),
 	};
