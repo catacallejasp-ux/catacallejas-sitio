@@ -39,6 +39,14 @@ const analytics = import.meta.env.PROD;
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<!-- Theme chosen with the header toggle, applied before first paint (no flash).
+		     Without a stored choice the site follows the system setting. -->
+		<script is:inline>
+			try {
+				const t = localStorage.getItem('theme');
+				if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+			} catch {}
+		</script>
 		{
 			analytics && (
 				<>

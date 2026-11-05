@@ -222,8 +222,8 @@ const statsOnCover = Boolean(cover) && results.length > 0;
 		{
 			disclaimer && (
 				<p class="container disclaimer">
-					Toda la información de este sitio es de uso exclusivo y confidencial, únicamente con
-					fines laborales.
+					Toda la información de este sitio es de uso exclusivo y confidencial, únicamente con fines
+					laborales.
 				</p>
 			)
 		}
@@ -422,10 +422,10 @@ const statsOnCover = Boolean(cover) && results.length > 0;
 		}
 		/* Glass tiles: text --ink / --violet-800 on white at 78% ≥ 7:1. */
 		.stat {
-			border-color: rgb(255 255 255 / 0.6);
-			background: rgb(255 255 255 / 0.8);
+			border-color: var(--edge);
+			background: color-mix(in srgb, var(--paper) 80%, transparent);
 			box-shadow:
-				inset 0 1px 0 rgb(255 255 255 / 0.8),
+				inset 0 1px 0 var(--edge),
 				0 16px 30px -18px rgb(65 51 166 / 0.45);
 			-webkit-backdrop-filter: blur(14px) saturate(160%);
 			backdrop-filter: blur(14px) saturate(160%);
@@ -460,7 +460,7 @@ const statsOnCover = Boolean(cover) && results.length > 0;
 		margin-bottom: 0.75rem;
 	}
 	.what p {
-		color: #34304d;
+		color: var(--ink-body);
 		font-size: clamp(1.1rem, 1rem + 0.4vw, 1.3rem);
 		line-height: 1.6;
 	}
@@ -499,7 +499,7 @@ const statsOnCover = Boolean(cover) && results.length > 0;
 	.meta {
 		z-index: 20;
 		margin-top: calc(-1 * clamp(1.5rem, 4vw, 2.5rem));
-		background: rgb(255 255 255 / 0.88);
+		background: color-mix(in srgb, var(--paper) 88%, transparent);
 		border-bottom: 1px solid var(--line);
 		-webkit-backdrop-filter: blur(12px);
 		backdrop-filter: blur(12px);
@@ -582,7 +582,7 @@ const statsOnCover = Boolean(cover) && results.length > 0;
 	.prose :global(ul),
 	.prose :global(ol) {
 		margin-top: 0.9rem;
-		color: #34304d;
+		color: var(--ink-body);
 	}
 	.prose :global(ul),
 	.prose :global(ol) {
@@ -592,7 +592,7 @@ const statsOnCover = Boolean(cover) && results.length > 0;
 		margin-top: 0.4rem;
 	}
 	.prose :global(li::marker) {
-		color: var(--violet);
+		color: var(--violet-accent);
 	}
 	.prose :global(img),
 	.prose :global(video) {

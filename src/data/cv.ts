@@ -175,20 +175,32 @@ export const flujoTrabajo = {
 };
 
 /**
- * Latest LinkedIn posts for the home section «Lo que estoy haciendo», newest first.
- * From each post's menu «…» → «Insertar»: copy the `src` URL of the iframe (a post
- * URL also works). Only the first 3 show; to update, add the new post at the top.
- * All cards share one height; longer posts scroll inside their card.
+ * «Lo que estoy haciendo» on the home page, newest first: a graphic and a short text
+ * ending in a link. Graphics live in src/assets/novedades/ (`imagen` is the file
+ * name); without one the card shows a pending placeholder.
  */
-export const postsLinkedIn: { url: string }[] = [
+export const novedades: {
+	imagen?: string;
+	/** What the graphic says, for people who can't see it. */
+	alt?: string;
+	texto: string;
+	enlace: { href: string; texto: string };
+	/** Text after the link. */
+	cierre?: string;
+}[] = [
 	{
-		url: 'https://www.linkedin.com/embed/feed/update/urn:li:share:7520835101933408256?collapsed=1',
+		imagen: '9punto5-2026.png',
+		alt: 'Gráfica: Voy a facilitar en 9punto5. 9punto5, 10 años. Catalina Callejas. 12, 13 y 14 de noviembre de 2026, Valdivia, Chile.',
+		texto: 'Este año, al igual que en 2025, estaré facilitando espacios en 9punto5, Valdivia. Más información en',
+		enlace: { href: 'https://9punto5.cl/', texto: '9punto5.cl' },
+		cierre: '. ¡Nos vemos allá! 💚',
 	},
 	{
-		url: 'https://www.linkedin.com/embed/feed/update/urn:li:share:7519180608313438208?collapsed=1',
-	},
-	{
-		url: 'https://www.linkedin.com/embed/feed/update/urn:li:share:7488226436361871361?collapsed=1',
+		imagen: 'voces-conversando-2026.png',
+		alt: 'Gráfica de +Voces conversando Chile: «Y a ti, ¿cómo te está yendo?». Una conversación sincera sobre la industria de la tecnología y el diseño en Chile con Catalina Callejas, facilitadora, y Bárbara Letelier, Product Lead en Creditú. 29 de octubre, 19 h, transmisión en vivo por Instagram.',
+		texto: 'En mi voluntariado con +Voces en Diseño, soy facilitadora del nuevo espacio «+Voces conversando», que ya tuvo su primera versión el pasado 29/10 en Instagram Live. Míralo completo en',
+		enlace: { href: 'https://www.instagram.com/reel/DfGJbuJkZM6/', texto: 'Instagram' },
+		cierre: '.',
 	},
 ];
 

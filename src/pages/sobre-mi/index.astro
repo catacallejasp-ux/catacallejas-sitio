@@ -103,7 +103,7 @@ const contacto = [
 					alt="Ilustración de Catalina Callejas"
 					width={360}
 					widths={[240, 360, 720]}
-					sizes="(max-width: 900px) 11rem, 360px"
+					sizes="(max-width: 900px) 8rem, 360px"
 					loading="eager"
 				/>
 			</div>
@@ -510,9 +510,15 @@ const contacto = [
 		max-height: min(55vh, 26rem);
 		margin-inline: auto;
 	}
+	/* Phones and tablets: the portrait goes above the title, small and aligned with
+	   the text (same as the home hero). */
 	@media (max-width: 899px) {
+		.intro__photo {
+			order: -1;
+		}
 		.intro__photo img {
-			max-height: 11rem;
+			max-height: 8rem;
+			margin-inline: 0;
 		}
 	}
 	.intro__title {
@@ -759,7 +765,7 @@ const contacto = [
 	}
 	.skill__icon {
 		flex: none;
-		color: var(--violet);
+		color: var(--violet-accent);
 	}
 	.skill__title {
 		font-size: 1rem;
@@ -877,7 +883,7 @@ const contacto = [
 	}
 	.contact__icon {
 		flex: none;
-		color: var(--violet);
+		color: var(--violet-accent);
 	}
 	.contact__text {
 		display: flex;

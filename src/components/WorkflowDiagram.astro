@@ -96,6 +96,19 @@ const nombre = (i: number) => numerados.flatMap((g) => g.pasos).find((p) => p.n 
 			};
 		};
 
+		// The arrowhead is not part of the stroke animation, so each line gets it only
+		// when the stroke reaches its end. Timings mirror the CSS below: delay
+		// order × 0.35s + 0.25s, duration 0.45s (0.9s for the loop).
+		let shownAt: number | undefined = reduce ? 0 : undefined;
+		const arm = (el: SVGPathElement) => {
+			if (shownAt === undefined) return; // armed again by show()
+			const o = Number(el.dataset.order);
+			const ends = shownAt + (o * 0.35 + 0.25 + ('loop' in el.dataset ? 0.9 : 0.45)) * 1000;
+			const set = () => el.setAttribute('marker-end', 'url(#flow-arrow)');
+			const wait = ends - performance.now();
+			if (reduce || wait <= 0) set();
+			else setTimeout(set, wait);
+		};
 		const draw = () => {
 			svg.querySelectorAll('path.flow__path').forEach((p) => p.remove());
 			const o = root.getBoundingClientRect();
@@ -135,10 +148,9 @@ const nombre = (i: number) => numerados.flatMap((g) => g.pasos).find((p) => p.n 
 			let lx: number;
 			let ly: number;
 			if (Math.abs(a.cx - b.cx) < 40) {
-				// One column: around the right edge, upwards.
-				// Lane between the cards and the panel edge (the groups leave room for it).
-				const panelR = o.width - parseFloat(getComputedStyle(root).paddingRight) / 2;
-				const x = Math.min(panelR, a.r + 22);
+				// One column: up the right side, in the lane each group frame leaves
+				// between its cards and its border (see .flow__group padding).
+				const x = a.r + 20;
 				const ya = a.cy - (a.b - a.t) * 0.15;
 				const yb = b.cy - (b.b - b.t) * 0.15;
 				paths.push({
@@ -146,8 +158,12 @@ const nombre = (i: number) => numerados.flatMap((g) => g.pasos).find((p) => p.n 
 					order: steps.length,
 					loop: true,
 				});
-				lx = x;
-				ly = (ya + yb) / 2;
+				// Centred on the lane, but never past the diagram's right edge.
+				lx = Math.min(x, o.width - label.offsetWidth / 2);
+				// Label in the gap between the two groups, clear of the cards.
+				const ga = box(steps[from - 1].closest<HTMLElement>('.flow__group')!);
+				const gb = box(steps[to - 1].closest<HTMLElement>('.flow__group')!);
+				ly = ga.t > gb.b ? (gb.b + ga.t) / 2 : (ya + yb) / 2;
 			} else {
 				// Side by side: up out of «from», over the groups' top edge, down into «to».
 				const groupTop = (el: HTMLElement) => box(el.closest<HTMLElement>('.flow__group')!).t;
@@ -168,11 +184,13 @@ const nombre = (i: number) => numerados.flatMap((g) => g.pasos).find((p) => p.n 
 				const el = document.createElementNS(NS, 'path');
 				el.setAttribute('d', p.d);
 				el.setAttribute('class', `flow__path${p.loop ? ' flow__path--loop' : ''}`);
-				el.setAttribute('marker-end', 'url(#flow-arrow)');
+				el.dataset.order = String(p.order);
+				if (p.loop) el.dataset.loop = '';
 				el.style.setProperty('--o', String(p.order));
 				svg.append(el);
 				const len = el.getTotalLength();
 				el.style.setProperty('--len', String(len));
+				arm(el);
 			}
 		};
 
@@ -180,7 +198,10 @@ const nombre = (i: number) => numerados.flatMap((g) => g.pasos).find((p) => p.n 
 		new ResizeObserver(draw).observe(root);
 
 		const show = () => {
+			if (shownAt !== undefined && !reduce) return;
 			root.classList.add('is-visible');
+			shownAt = performance.now();
+			svg.querySelectorAll<SVGPathElement>('path.flow__path').forEach(arm);
 			window.removeEventListener('scroll', check);
 			io?.disconnect();
 		};
@@ -257,10 +278,11 @@ const nombre = (i: number) => numerados.flatMap((g) => g.pasos).find((p) => p.n 
 		padding: 0;
 		list-style: none;
 	}
-	/* One column: room on the right for the loop's lane. */
+	/* One column: each frame keeps a lane on the right, inside its border, for the
+	   loop line, so the diagram stays as wide as the text around it. */
 	@media (max-width: 899px) {
-		.flow__groups {
-			padding-right: 1.75rem;
+		.flow__groups > .flow__group {
+			padding-right: 2.5rem;
 		}
 	}
 	@media (min-width: 900px) {
@@ -277,7 +299,7 @@ const nombre = (i: number) => numerados.flatMap((g) => g.pasos).find((p) => p.n 
 		padding: 1rem;
 		border: 2px solid var(--tone);
 		border-radius: calc(var(--radius) * 1.2);
-		background: rgb(255 255 255 / 0.45);
+		background: color-mix(in srgb, var(--paper) 45%, transparent);
 	}
 	.flow__group--teal {
 		--tone: var(--teal-300);
@@ -288,8 +310,8 @@ const nombre = (i: number) => numerados.flatMap((g) => g.pasos).find((p) => p.n 
 		--tone-ink: var(--violet-700);
 	}
 	.flow__group--sky {
-		--tone: #8cc8ff;
-		--tone-ink: #1d5c9c;
+		--tone: light-dark(#8cc8ff, #3d7fbf);
+		--tone-ink: light-dark(#1d5c9c, #a9d6ff);
 	}
 	.flow__group-name {
 		font-family: var(--font-display);

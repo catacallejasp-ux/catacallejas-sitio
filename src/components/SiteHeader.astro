@@ -24,14 +24,47 @@ const links: { id: Section; href: string; texto: string }[] = [
 				alt={`${perfil.nombreCorto}, ir al inicio`}
 			/>
 		</a>
+		<button class="theme-toggle" type="button" aria-pressed="false" hidden>
+			<span class="visually-hidden">Modo oscuro</span>
+			<svg
+				class="theme-toggle__moon"
+				viewBox="0 0 24 24"
+				width="22"
+				height="22"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				aria-hidden="true"
+				focusable="false"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5Z"></path></svg
+			>
+			<svg
+				class="theme-toggle__sun"
+				viewBox="0 0 24 24"
+				width="22"
+				height="22"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				aria-hidden="true"
+				focusable="false"
+				><circle cx="12" cy="12" r="4"></circle><path
+					d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
+				></path></svg
+			>
+		</button>
 		<button
 			class="menu-toggle"
 			type="button"
+			aria-haspopup="dialog"
 			aria-expanded="false"
-			aria-controls="menu-principal"
+			aria-controls="menu-movil"
 			hidden
 		>
-			<span class="visually-hidden">Menú</span>
+			<span class="visually-hidden">Abrir menú</span>
 			<span class="menu-toggle__bars" aria-hidden="true"></span>
 		</button>
 		<nav id="menu-principal" class="nav" aria-label="Principal">
@@ -59,28 +92,130 @@ const links: { id: Section; href: string; texto: string }[] = [
 			</ul>
 		</nav>
 	</div>
+	<!-- Phone menu: a drawer from the right, opened by .menu-toggle (JS only). As a
+	     modal <dialog> it sits in the top layer over the page, keeps focus inside and
+	     closes with Escape. -->
+	<dialog id="menu-movil" class="drawer" aria-label="Menú">
+		<div class="drawer__head">
+			<button class="drawer__close" type="button">
+				<span class="visually-hidden">Cerrar menú</span>
+				<svg
+					viewBox="0 0 24 24"
+					width="22"
+					height="22"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					aria-hidden="true"
+					focusable="false"><path d="M6 6l12 12M18 6 6 18"></path></svg
+				>
+			</button>
+		</div>
+		<nav aria-label="Principal">
+			<ul class="drawer__list">
+				{
+					links.map((l) => (
+						<li>
+							<a
+								class="drawer__link"
+								href={l.href}
+								aria-current={current === l.id ? 'page' : undefined}
+							>
+								{l.texto}
+							</a>
+						</li>
+					))
+				}
+				<li>
+					<a
+						class="drawer__cta"
+						href="/sobre-mi"
+						aria-current={current === 'sobre-mi' ? 'page' : undefined}>Sobre mí</a
+					>
+				</li>
+			</ul>
+		</nav>
+	</dialog>
 </header>
 
 <script>
-	// Mobile menu. Without JS the toggle stays hidden and the links simply wrap.
+	// Theme toggle: a pressed button means dark. Without a stored choice the page
+	// follows the system; the first click pins the opposite of what is showing.
+	// Without JS the button stays hidden and the system setting applies.
+	const themeBtn = document.querySelector<HTMLButtonElement>('.theme-toggle');
+	if (themeBtn) {
+		const root = document.documentElement;
+		const system = window.matchMedia('(prefers-color-scheme: dark)');
+		const isDark = () => (root.dataset.theme ? root.dataset.theme === 'dark' : system.matches);
+		const sync = () => themeBtn.setAttribute('aria-pressed', String(isDark()));
+		themeBtn.hidden = false;
+		sync();
+		system.addEventListener('change', sync);
+		themeBtn.addEventListener('click', () => {
+			const next = isDark() ? 'light' : 'dark';
+			root.dataset.theme = next;
+			try {
+				localStorage.setItem('theme', next);
+			} catch {}
+			sync();
+		});
+	}
+
+	// Phone menu (drawer). Without JS the toggle stays hidden and the desktop links
+	// simply wrap under the logo.
 	const toggle = document.querySelector<HTMLButtonElement>('.menu-toggle');
-	const nav = document.getElementById('menu-principal');
-	if (toggle && nav) {
+	const drawer = document.querySelector<HTMLDialogElement>('#menu-movil');
+	if (toggle && drawer) {
 		document.documentElement.classList.add('has-menu-js');
 		toggle.hidden = false;
-		const set = (open: boolean) => {
-			toggle.setAttribute('aria-expanded', String(open));
-			nav.classList.toggle('is-open', open);
+		const motion = window.matchMedia('(prefers-reduced-motion: no-preference)');
+
+		const open = () => {
+			drawer.showModal();
+			toggle.setAttribute('aria-expanded', 'true');
+			// Next frame, so the slide-in transition starts from the closed position.
+			requestAnimationFrame(() => drawer.classList.add('is-open'));
 		};
-		toggle.addEventListener('click', () => set(toggle.getAttribute('aria-expanded') !== 'true'));
-		document.addEventListener('keydown', (e) => {
-			if (e.key === 'Escape' && nav.classList.contains('is-open')) {
-				set(false);
+		const close = () => {
+			if (!drawer.open) return;
+			drawer.classList.remove('is-open');
+			toggle.setAttribute('aria-expanded', 'false');
+			let finished = false;
+			const done = () => {
+				// Reopened before the slide-out finished: leave it open.
+				if (finished || drawer.classList.contains('is-open')) return;
+				finished = true;
+				drawer.close();
 				toggle.focus();
-			}
+			};
+			if (!motion.matches) return done();
+			drawer.addEventListener('transitionend', done, { once: true });
+			setTimeout(done, 450); // in case transitionend never fires
+
+		};
+
+		toggle.addEventListener('click', open);
+		drawer.querySelector('.drawer__close')!.addEventListener('click', close);
+		// Escape: animate out instead of the dialog's instant close.
+		drawer.addEventListener('cancel', (e) => {
+			e.preventDefault();
+			close();
 		});
-		nav.addEventListener('click', (e) => {
-			if ((e.target as HTMLElement).closest('a')) set(false);
+		// A click on the dimmed backdrop lands on the dialog itself, outside its box.
+		drawer.addEventListener('click', (e) => {
+			const r = drawer.getBoundingClientRect();
+			const outside =
+				e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+			if (outside || (e.target as HTMLElement).closest('a')) close();
+		});
+		// Turning the phone sideways past the breakpoint shows the desktop nav: close.
+		window.matchMedia('(min-width: 48rem)').addEventListener('change', (e) => {
+			if (e.matches && drawer.open) {
+				drawer.classList.remove('is-open');
+				drawer.close();
+				toggle.setAttribute('aria-expanded', 'false');
+			}
 		});
 	}
 </script>
@@ -90,7 +225,7 @@ const links: { id: Section; href: string; texto: string }[] = [
 		position: sticky;
 		top: 0;
 		z-index: 50;
-		background: rgb(250 250 252 / 0.9);
+		background: var(--header-bg);
 		backdrop-filter: blur(12px);
 		border-bottom: 1px solid var(--line);
 	}
@@ -98,11 +233,11 @@ const links: { id: Section; href: string; texto: string }[] = [
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
-		justify-content: space-between;
-		gap: 0 1rem;
+		gap: 0 0.5rem;
 		min-height: 4rem;
 	}
 	.logo {
+		margin-right: auto;
 		display: flex;
 		align-items: center;
 		gap: 0.35rem;
@@ -154,13 +289,43 @@ const links: { id: Section; href: string; texto: string }[] = [
 		transition: background-color 0.15s ease;
 	}
 	.nav__cta:hover {
-		background: var(--violet-ink);
+		background: var(--violet-hover);
 	}
 	.nav__cta[aria-current='page'] {
-		background: var(--violet-800);
+		background: var(--brand-800);
+	}
+
+	/* After the nav on wide screens; next to the menu button on phones. */
+	.theme-toggle {
+		order: 2;
+		display: grid;
+		place-items: center;
+		width: 44px;
+		height: 44px;
+		border: 0;
+		border-radius: 50%;
+		background: transparent;
+		color: var(--violet-ink);
+		cursor: pointer;
+		transition: background-color 0.15s ease;
+	}
+	.theme-toggle[hidden] {
+		display: none;
+	}
+	.theme-toggle:hover {
+		background: var(--violet-100);
+	}
+	/* Shows the theme you would switch to. */
+	.theme-toggle__sun,
+	.theme-toggle[aria-pressed='true'] .theme-toggle__moon {
+		display: none;
+	}
+	.theme-toggle[aria-pressed='true'] .theme-toggle__sun {
+		display: block;
 	}
 
 	.menu-toggle {
+		order: 3;
 		display: none;
 		width: 44px;
 		height: 44px;
@@ -198,19 +363,116 @@ const links: { id: Section; href: string; texto: string }[] = [
 		}
 		:global(.has-menu-js) .nav {
 			display: none;
-			flex-basis: 100%;
-			padding-bottom: 1rem;
 		}
-		:global(.has-menu-js) .nav.is-open {
-			display: block;
-		}
-		:global(.has-menu-js) .nav__list {
-			flex-direction: column;
-			align-items: stretch;
-		}
-		:global(.has-menu-js) .nav__cta {
-			justify-content: center;
-			margin-top: 0.5rem;
+	}
+
+	/* Drawer: slides in from the right over a darkened page (no blur). */
+	.drawer {
+		position: fixed;
+		inset: 0 0 0 auto;
+		width: min(82vw, 22rem);
+		max-width: none;
+		height: 100dvh;
+		max-height: none;
+		margin: 0;
+		padding: 0.75rem 1.25rem 2rem;
+		border: 0;
+		border-left: 1px solid var(--line);
+		background: var(--surface);
+		color: var(--ink);
+		box-shadow: -24px 0 48px -24px rgb(28 32 48 / 0.35);
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		transform: translateX(100%);
+		transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+	}
+	.drawer.is-open {
+		transform: none;
+	}
+	.drawer::backdrop {
+		background: rgb(10 8 28 / 0.5);
+		opacity: 0;
+		transition: opacity 0.32s ease;
+	}
+	.drawer.is-open::backdrop {
+		opacity: 1;
+	}
+	.drawer__head {
+		display: flex;
+		justify-content: flex-end;
+		/* Lines the close button up with the menu button it replaces. */
+		min-height: calc(4rem - 0.75rem);
+		align-items: center;
+	}
+	.drawer__close {
+		display: grid;
+		place-items: center;
+		width: 48px;
+		height: 48px;
+		border: 1px solid var(--line);
+		border-radius: 50%;
+		background: transparent;
+		color: var(--ink);
+		cursor: pointer;
+	}
+	.drawer__close:hover {
+		background: var(--violet-100);
+	}
+	.drawer__list {
+		display: grid;
+		gap: 0.25rem;
+		margin-top: 1.5rem;
+		padding: 0;
+		list-style: none;
+	}
+	.drawer__link {
+		display: flex;
+		align-items: center;
+		min-height: 56px;
+		padding: 0 1rem;
+		border-radius: var(--radius-sm);
+		font-family: var(--font-display);
+		font-size: 1.35rem;
+		font-weight: 500;
+		color: var(--ink);
+		text-decoration: none;
+	}
+	.drawer__link:hover {
+		background: var(--violet-50);
+		color: var(--violet-ink);
+	}
+	.drawer__link[aria-current='page'] {
+		background: var(--violet-100);
+		color: var(--violet-ink);
+		font-weight: 600;
+	}
+	/* Same filled pill as the desktop «Sobre mí». */
+	.drawer__cta {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 56px;
+		margin-top: 1rem;
+		padding: 0 1.5rem;
+		border-radius: 999px;
+		background: var(--violet);
+		color: #fff;
+		font-family: var(--font-display);
+		font-size: 1.2rem;
+		font-weight: 500;
+		text-decoration: none;
+		transition: background-color 0.15s ease;
+	}
+	.drawer__cta:hover {
+		background: var(--violet-hover);
+	}
+	.drawer__cta[aria-current='page'] {
+		background: var(--brand-800);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.drawer,
+		.drawer::backdrop {
+			transition: none;
 		}
 	}
 </style>

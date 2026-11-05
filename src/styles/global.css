@@ -5,67 +5,103 @@
 	cover — violet #7B66FF and teal #30BACC — with lighter/darker steps of each, plus
 	cool greys as neutrals. No black surfaces: "dark" means deep violet.
 	Type: Poppins (primary: headings, buttons, navigation) + Plus Jakarta Sans
-	(secondary: body text). Light-only, so `color-scheme` stays unset.
+	(secondary: body text).
 
-	Contrast (WCAG 2.x):
+	Light and dark themes. Every colour token is `light-dark(<light>, <dark>)`: the
+	site follows the visitor's system setting (`color-scheme: light dark`), and the
+	header toggle pins one by setting `data-theme` on <html> (remembered in
+	localStorage, applied before first paint by the inline script in BaseLayout).
+	In dark, the scales are mirrored around the midtone: tints (50–300) become deep
+	violet surfaces and text steps (700–900) become light, so "tint background + 700
+	text" pairs keep working. Steps 400–600 stay the same in both themes.
+	Fills that carry white text must not use a mirrored step: they use --brand-700 /
+	--brand-800 / --brand-900 (fixed) or --violet-600.
+	Light glass over the page uses --paper (white in light, deep violet in dark) and
+	--edge for its highlights.
+
+	Contrast (WCAG 2.x), light:
 	  white on --violet-600 5.36 (buttons) · white on --violet-800 9.34 (deep surfaces)
 	  --violet-700 on white 7.02 (links, small accents) · --violet-500 on white 4.05 →
 	  large text only (≥ 24px, e.g. the highlighted name) · --teal-800 on --teal-100 5.7
 	  --neutral-600 on white 6.78 (secondary text) · --neutral-900 on white 16.2
 	  --teal-200 on --violet-800 7.14 · --violet-100 on --violet-800 7.92
+	Contrast, dark (bg #110f25, surface #1b1838):
+	  --ink on bg 16.7 · --ink-muted on bg 9.5, on surface 8.6 · --violet-700 on bg
+	  9.1, on --violet-100 7.1 (chips) · --violet-500 on bg 5.6 · --teal-800 on
+	  --teal-100 8.9 · white on --violet-600 5.36 · white on --surface-deep 13.0 ·
+	  --on-deep-accent on --surface-deep 9.9 · --violet-600 border on bg 3.5 (non-text)
 */
 :root {
+	color-scheme: light dark;
+
 	/* Violet, base #7B66FF = 500 */
-	--violet-50: #f6f4ff;
-	--violet-100: #edeaff;
-	--violet-200: #dad4ff;
-	--violet-300: #baafff;
+	--violet-50: light-dark(#f6f4ff, #19163a);
+	--violet-100: light-dark(#edeaff, #252057);
+	--violet-200: light-dark(#dad4ff, #322a73);
+	--violet-300: light-dark(#baafff, #5a4dc0);
 	--violet-400: #9888ff;
-	--violet-500: #7b66ff;
+	--violet-500: light-dark(#7b66ff, #8b78ff);
 	--violet-600: #6754e0;
-	--violet-700: #5444c3;
-	--violet-800: #4133a6;
-	--violet-900: #31248d;
+	--violet-700: light-dark(#5444c3, #b5aaff);
+	--violet-800: light-dark(#4133a6, #cdc6ff);
+	--violet-900: light-dark(#31248d, #e3deff);
 
 	/* Teal, base #30BACC = 500 */
-	--teal-50: #eef9fb;
-	--teal-100: #def4f7;
-	--teal-200: #bde9ef;
-	--teal-300: #87d7e1;
+	--teal-50: light-dark(#eef9fb, #0f2230);
+	--teal-100: light-dark(#def4f7, #133641);
+	--teal-200: light-dark(#bde9ef, #1a4a57);
+	--teal-300: light-dark(#87d7e1, #2b8f9d);
 	--teal-400: #55c6d5;
 	--teal-500: #30bacc;
 	--teal-600: #269aaa;
-	--teal-700: #1d808f;
-	--teal-800: #156774;
-	--teal-900: #0e515c;
+	--teal-700: light-dark(#1d808f, #6fd0dc);
+	--teal-800: light-dark(#156774, #9be2eb);
+	--teal-900: light-dark(#0e515c, #c4f0f5);
 
-	/* Neutrals: cool greys */
-	--neutral-0: #ffffff;
-	--neutral-50: #f7f8fb;
-	--neutral-100: #eff1f6;
-	--neutral-200: #e1e4ec;
-	--neutral-300: #c8cdd9;
-	--neutral-400: #9aa1b2;
-	--neutral-500: #6f7689;
-	--neutral-600: #545b6e;
-	--neutral-700: #3e4456;
-	--neutral-800: #2b3040;
-	--neutral-900: #1c2030;
+	/* Neutrals: cool greys (dark: violet-tinted, never black) */
+	--neutral-0: light-dark(#ffffff, #1b1838);
+	--neutral-50: light-dark(#f7f8fb, #110f25);
+	--neutral-100: light-dark(#eff1f6, #221e43);
+	--neutral-200: light-dark(#e1e4ec, #2f2a56);
+	--neutral-300: light-dark(#c8cdd9, #433d70);
+	--neutral-400: light-dark(#9aa1b2, #6e6995);
+	--neutral-500: light-dark(#6f7689, #948fb6);
+	--neutral-600: light-dark(#545b6e, #b9b5d3);
+	--neutral-700: light-dark(#3e4456, #d2cfe6);
+	--neutral-800: light-dark(#2b3040, #e4e2f1);
+	--neutral-900: light-dark(#1c2030, #f2f1f9);
+
+	/* Fixed brand steps: the same in both themes. For fills behind white text and
+	   for text on white (e.g. .button--light). */
+	--brand-700: #5444c3;
+	--brand-800: #4133a6;
+	--brand-900: #31248d;
 
 	/* Semantic roles */
 	--ink: var(--neutral-900); /* headings and body text */
 	--ink-muted: var(--neutral-600);
+	--ink-body: light-dark(#34304d, #dcd9ee); /* long-form text on project pages */
 	--bg: var(--neutral-50);
 	--surface: var(--neutral-0);
 	--line: var(--neutral-200);
-	--surface-deep: var(--violet-800); /* replaces black panels */
-	--surface-deep-2: var(--violet-900);
+	--surface-deep: light-dark(#4133a6, #2c2378); /* replaces black panels */
+	--surface-deep-2: light-dark(#31248d, #221a63);
 	--on-deep: #fff;
-	--on-deep-muted: var(--violet-100);
-	--on-deep-accent: var(--teal-200);
-	--line-dark: var(--violet-700);
+	--on-deep-muted: #edeaff;
+	--on-deep-accent: #bde9ef;
+	--line-dark: var(--brand-700);
 	--violet: var(--violet-600); /* primary fill */
-	--violet-ink: var(--violet-700); /* violet text on light surfaces */
+	--violet-hover: var(--brand-700); /* primary fill, hover */
+	--violet-ink: var(--violet-700); /* violet text on page surfaces */
+	--violet-accent: light-dark(#6754e0, #a294ff); /* violet icons and accents on page surfaces */
+	/* "White" chip or badge that must stand out from a tinted surface. In dark a
+	   plain --surface would sit darker than the tint and read as a black hole. */
+	--raised: light-dark(#ffffff, #3a3185);
+
+	/* Glass and chrome */
+	--paper: light-dark(#ffffff, #1f1b42); /* base of light glass; mix with transparent */
+	--edge: light-dark(rgb(255 255 255 / 0.9), rgb(255 255 255 / 0.1)); /* glass rim */
+	--header-bg: light-dark(rgb(250 250 252 / 0.9), rgb(17 15 37 / 0.85));
 
 	/* Legacy names, mapped onto the new scales. */
 	--lavender-50: var(--violet-50);
@@ -89,6 +125,13 @@
 
 	--gutter: clamp(1rem, 4vw, 2.5rem);
 	--max: 74rem;
+}
+
+:root[data-theme='light'] {
+	color-scheme: light;
+}
+:root[data-theme='dark'] {
+	color-scheme: dark;
 }
 
 html {
@@ -145,7 +188,7 @@ a {
 }
 
 ::selection {
-	background: var(--teal-200);
+	background: light-dark(#bde9ef, #2b8f9d);
 }
 
 /* Layout helpers */
@@ -238,7 +281,7 @@ a {
 	color: #fff;
 }
 .button--primary:hover {
-	background: var(--violet-700);
+	background: var(--violet-hover);
 }
 
 /* Secondary: border and text only, never a fill (also on hover: the border thickens
@@ -260,7 +303,7 @@ a {
 /* For deep-violet surfaces. */
 .button--light {
 	background: #fff;
-	color: var(--violet-800);
+	color: var(--brand-800);
 }
 .button--light:hover {
 	background: var(--teal-100);
@@ -281,7 +324,7 @@ a {
 	margin-right: -0.9rem;
 	border-radius: 50%;
 	background: #fff;
-	color: var(--violet-700);
+	color: var(--brand-700);
 	font-size: 0.95rem;
 }
 
@@ -445,7 +488,7 @@ a {
 	border-radius: var(--radius-sm);
 	color: var(--ink-muted);
 	font-size: 0.9rem;
-	background: rgb(255 255 255 / 0.7);
+	background: color-mix(in srgb, var(--paper) 70%, transparent);
 }
 
 .section-lead {

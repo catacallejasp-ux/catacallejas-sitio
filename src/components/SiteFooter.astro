@@ -46,7 +46,7 @@ import { perfil } from '../data/cv';
 		padding-top: clamp(1.5rem, 4vw, 2.5rem);
 		background:
 			radial-gradient(60% 140% at 0% 100%, var(--violet-200), transparent 70%),
-			radial-gradient(40% 120% at 100% 100%, rgb(237 234 255 / 0.8), transparent 70%);
+			radial-gradient(40% 120% at 100% 100%, color-mix(in srgb, var(--violet-100) 80%, transparent), transparent 70%);
 	}
 	/* The divider spans the whole screen; the text stays in the container. */
 	.footer {
@@ -69,19 +69,23 @@ import { perfil } from '../data/cv';
 		text-underline-offset: 0.2em;
 		overflow-wrap: anywhere;
 	}
-	/* Credit line: smaller and grey (--ink-muted on the footer glow ≥ 5.7:1). */
+	/* Credit line: smaller and grey (--ink-muted on the footer glow ≥ 5.7:1), with the
+	   robot icon above the sentence and clear space from the contact line. */
 	.footer__credit {
 		display: flex;
+		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: 0.45rem;
-		margin-top: 0.75rem;
+		gap: 0.4rem;
+		margin-top: clamp(1.75rem, 4vw, 2.25rem);
 		font-size: 0.9rem;
 		color: var(--ink-muted);
 		text-align: center;
 	}
 	.footer__credit svg {
 		flex: none;
+		width: 22px;
+		height: 22px;
 	}
 	.footer__text a:hover {
 		color: var(--violet-900);

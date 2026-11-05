@@ -195,23 +195,23 @@ const tiles = especialidades.map((e, i) => ({
 		min-height: 9rem;
 		padding: clamp(1.25rem, 2.5vw, 1.6rem);
 		border-radius: var(--radius);
-		border: 1px solid rgb(255 255 255 / 0.9);
+		border: 1px solid var(--edge);
 		background: var(--glass);
 		box-shadow:
-			inset 0 1px 0 #fff,
+			inset 0 1px 0 var(--edge),
 			0 18px 40px -22px rgb(65 51 166 / 0.35);
 		-webkit-backdrop-filter: blur(14px) saturate(140%);
 		backdrop-filter: blur(14px) saturate(140%);
 		color: var(--ink);
 	}
 	.tile--frost {
-		--glass: rgb(255 255 255 / 0.6);
+		--glass: color-mix(in srgb, var(--paper) 60%, transparent);
 	}
 	.tile--lilac {
-		--glass: rgb(218 212 255 / 0.6);
+		--glass: color-mix(in srgb, var(--violet-200) 60%, transparent);
 	}
 	.tile--sky {
-		--glass: rgb(189 233 239 / 0.6);
+		--glass: color-mix(in srgb, var(--teal-200) 60%, transparent);
 	}
 	.tile--deep {
 		--glass: rgb(65 51 166 / 0.92);
@@ -223,7 +223,7 @@ const tiles = especialidades.map((e, i) => ({
 	}
 	@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
 		.tile--frost {
-			--glass: #fff;
+			--glass: var(--paper);
 		}
 		.tile--lilac {
 			--glass: var(--violet-100);
@@ -261,7 +261,7 @@ const tiles = especialidades.map((e, i) => ({
 		letter-spacing: -0.01em;
 	}
 	.tile--deep .tile__icon {
-		color: var(--teal-200);
+		color: var(--on-deep-accent);
 	}
 	.tile__chips {
 		display: flex;
@@ -273,7 +273,7 @@ const tiles = especialidades.map((e, i) => ({
 	.tile__chip {
 		padding: 0.35rem 0.8rem;
 		border-radius: 999px;
-		background: rgb(255 255 255 / 0.8);
+		background: color-mix(in srgb, var(--paper) 80%, transparent);
 		color: var(--violet-800);
 		font-size: 0.9rem;
 		font-weight: 500;

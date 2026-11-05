@@ -1,0 +1,95 @@
+---
+/**
+ * «Lo que estoy haciendo»: one card per item in `novedades` (src/data/cv.ts), with
+ * its graphic and a short text that ends in a link. Replaces the LinkedIn embeds,
+ * which scrolled badly inside their iframes on some browsers.
+ */
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+import Pending from './Pending.astro';
+import { novedades } from '../data/cv';
+
+const files = import.meta.glob<{ default: ImageMetadata }>('../assets/novedades/*', { eager: true });
+const items = novedades.map((n) => {
+	const img = n.imagen ? files[`../assets/novedades/${n.imagen}`]?.default : undefined;
+	if (n.imagen && !img) throw new Error(`Imagen no encontrada: src/assets/novedades/${n.imagen}`);
+	return { ...n, img };
+});
+const externo = (href: string) => /^https?:/.test(href);
+---
+
+<ul class="news">
+	{
+		items.map((n) => (
+			<li class="news__item">
+				<div class="news__media">
+					{n.img ? (
+						<Image src={n.img} alt={n.alt ?? ''} widths={[320, 480, 720]} sizes="(max-width: 40rem) 100vw, 18rem" />
+					) : (
+						<Pending block label="la gráfica de esta novedad (src/assets/novedades/)" />
+					)}
+				</div>
+				<p class="news__text">
+					{n.texto}{' '}
+					<a
+						href={n.enlace.href}
+						target={externo(n.enlace.href) ? '_blank' : undefined}
+						rel={externo(n.enlace.href) ? 'noopener' : undefined}
+					>
+						{n.enlace.texto}
+						{externo(n.enlace.href) && <span class="visually-hidden"> (se abre en otra pestaña)</span>}
+					</a>
+					{n.cierre}
+				</p>
+			</li>
+		))
+	}
+</ul>
+
+<style>
+	.news {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr));
+		padding: 0;
+		list-style: none;
+	}
+	/* Graphic beside the text on wide cards, above it on phones. */
+	.news__item {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 1.25rem;
+		align-items: center;
+		padding: 1rem;
+		border: 1px solid var(--line);
+		border-radius: var(--radius);
+		background: var(--surface);
+	}
+	@media (min-width: 40rem) {
+		.news__item {
+			grid-template-columns: minmax(0, 15rem) minmax(0, 1fr);
+		}
+	}
+	.news__media {
+		aspect-ratio: 4 / 5;
+		overflow: hidden;
+		border-radius: var(--radius-sm);
+	}
+	.news__media :global(img) {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	.news__media :global(.pending) {
+		height: 100%;
+	}
+	.news__text {
+		font-size: 1.05rem;
+		line-height: 1.6;
+		padding-inline: 0.25rem;
+	}
+	.news__text a {
+		font-weight: 600;
+	}
+</style>

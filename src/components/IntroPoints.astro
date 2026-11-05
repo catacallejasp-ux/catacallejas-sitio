@@ -51,7 +51,8 @@ const { tag, tagUnderEm, points } = Astro.props;
 	.about__rule {
 		position: relative;
 		height: 1px;
-		background: var(--line);
+		/* In dark, --line is too close to the intro's tint to read as a divider. */
+		background: light-dark(var(--line), var(--violet-300));
 	}
 	.about__tag {
 		position: absolute;
@@ -61,7 +62,7 @@ const { tag, tagUnderEm, points } = Astro.props;
 		left: calc(clamp(2.75rem, 1.2rem + 6vw, 5.2rem) * var(--under) / 2);
 		padding: 0.55rem 1.25rem;
 		border-radius: 999px;
-		background: var(--surface);
+		background: var(--raised);
 		box-shadow:
 			0 1px 2px rgb(28 32 48 / 0.06),
 			0 6px 18px rgb(103 84 224 / 0.12);
@@ -86,7 +87,7 @@ const { tag, tagUnderEm, points } = Astro.props;
 	}
 	.about__icon {
 		display: block;
-		color: var(--violet);
+		color: var(--violet-accent);
 	}
 	.about__title {
 		margin-top: 1.25rem;

@@ -1,6 +1,6 @@
 ---
 /**
- * «¿Quieres conocer mi trayectoria?» as a bento grid of glass tiles over soft colour
+ * «Conoce mi trayectoria» as a bento grid of glass tiles over soft colour
  * blobs (moodboard reference). Main tile first in the DOM so the heading leads.
  * Contrast: --ink / --violet-800 text on light glass ≥ 5.8:1 even over a blob;
  * white on the deep tile (--violet-800 at 92%) ≥ 7:1.
@@ -17,8 +17,7 @@ const arrow = 'M4 10h12M11 5l5 5-5 5';
 	<span class="traj__blob traj__blob--teal" aria-hidden="true"></span>
 	<div class="container traj__grid">
 		<div class="tile tile--frost tile--main">
-			<h2 id="trayectoria" class="tile__heading">¿Quieres conocer mi trayectoria?</h2>
-			<p class="tile__text">Quién soy, mi trayectoria y mis proyectos, en un solo lugar.</p>
+			<h2 id="trayectoria" class="tile__heading">Conoce mi trayectoria</h2>
 			<p class="tile__label">He trabajado en:</p>
 			<ul class="chips tile__chips">
 				{t.rubros.map((r) => <li class="chip">{r}</li>)}
@@ -165,10 +164,10 @@ const arrow = 'M4 10h12M11 5l5 5-5 5';
 		min-height: 11rem;
 		padding: clamp(1.25rem, 2.5vw, 1.75rem);
 		border-radius: var(--radius);
-		border: 1px solid rgb(255 255 255 / 0.9);
+		border: 1px solid var(--edge);
 		background: var(--glass);
 		box-shadow:
-			inset 0 1px 0 #fff,
+			inset 0 1px 0 var(--edge),
 			0 18px 40px -22px rgb(65 51 166 / 0.35);
 		-webkit-backdrop-filter: blur(14px) saturate(140%);
 		backdrop-filter: blur(14px) saturate(140%);
@@ -176,13 +175,13 @@ const arrow = 'M4 10h12M11 5l5 5-5 5';
 		text-decoration: none;
 	}
 	.tile--frost {
-		--glass: rgb(255 255 255 / 0.6);
+		--glass: color-mix(in srgb, var(--paper) 60%, transparent);
 	}
 	.tile--lilac {
-		--glass: rgb(218 212 255 / 0.6);
+		--glass: color-mix(in srgb, var(--violet-200) 60%, transparent);
 	}
 	.tile--sky {
-		--glass: rgb(189 233 239 / 0.6);
+		--glass: color-mix(in srgb, var(--teal-200) 60%, transparent);
 	}
 	.tile--deep {
 		--glass: rgb(65 51 166 / 0.92);
@@ -194,7 +193,7 @@ const arrow = 'M4 10h12M11 5l5 5-5 5';
 	}
 	@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
 		.tile--frost {
-			--glass: #fff;
+			--glass: var(--paper);
 		}
 		.tile--lilac {
 			--glass: var(--violet-100);
@@ -211,9 +210,6 @@ const arrow = 'M4 10h12M11 5l5 5-5 5';
 		letter-spacing: -0.03em;
 		max-width: 18ch;
 	}
-	.tile__text {
-		color: var(--ink-muted);
-	}
 	.tile__label {
 		margin-top: 0.5rem;
 		font-family: var(--font-display);
@@ -222,7 +218,7 @@ const arrow = 'M4 10h12M11 5l5 5-5 5';
 		color: var(--violet-800);
 	}
 	.tile__chips .chip {
-		background: rgb(255 255 255 / 0.8);
+		background: color-mix(in srgb, var(--paper) 80%, transparent);
 		color: var(--violet-800);
 	}
 	.tile__actions {
@@ -267,7 +263,7 @@ const arrow = 'M4 10h12M11 5l5 5-5 5';
 	}
 	.tile__detail {
 		font-size: 0.9rem;
-		color: var(--violet-100);
+		color: var(--on-deep-muted);
 	}
 	.tile__arrow {
 		position: absolute;
@@ -278,7 +274,7 @@ const arrow = 'M4 10h12M11 5l5 5-5 5';
 		width: 44px;
 		height: 44px;
 		border-radius: 50%;
-		background: rgb(255 255 255 / 0.85);
+		background: color-mix(in srgb, var(--paper) 85%, transparent);
 		color: var(--violet-800);
 		transition:
 			background-color 0.2s ease,

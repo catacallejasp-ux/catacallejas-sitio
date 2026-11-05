@@ -131,7 +131,7 @@ const paths: Record<Props['icon'], string> = {
 		bottom: 0;
 		border-radius: 22px;
 		background: var(--tab);
-		box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.55);
+		box-shadow: inset 0 1px 0 color-mix(in srgb, var(--edge) 60%, transparent);
 	}
 
 	/* Sheet of paper tucked inside; slides up on hover/focus. */
@@ -147,7 +147,7 @@ const paths: Record<Props['icon'], string> = {
 		gap: 0.5rem;
 		padding: 1rem 1.1rem;
 		border-radius: 12px;
-		background: #fff;
+		background: var(--paper);
 		box-shadow: 0 4px 14px rgb(28 32 48 / 0.12);
 		transform: translateY(0.5rem) rotate(-2deg);
 		/* Hidden at rest: behind the glass it would read as a white smudge. */
@@ -243,19 +243,19 @@ const paths: Record<Props['icon'], string> = {
 	/* Tones: light frosted glass over a slightly deeper back. */
 	.folder--lilac {
 		--tab: var(--violet-300);
-		--front: rgb(218 212 255 / 0.6); /* --violet-200 */
+		--front: color-mix(in srgb, var(--violet-200) 60%, transparent);
 		--glow-color: rgb(103 84 224 / 0.35);
 	}
 	.folder--sky {
 		--tab: var(--teal-300);
-		--front: rgb(189 233 239 / 0.6); /* --teal-200 */
+		--front: color-mix(in srgb, var(--teal-200) 60%, transparent);
 		--glow-color: rgb(38 154 170 / 0.35);
 	}
 	.folder__front {
-		border-color: rgb(255 255 255 / 0.9);
+		border-color: var(--edge);
 		box-shadow:
-			inset 0 1px 0 #fff,
-			inset 0 0 18px rgb(255 255 255 / 0.35),
+			inset 0 1px 0 var(--edge),
+			inset 0 0 18px color-mix(in srgb, var(--paper) 35%, transparent),
 			0 18px 40px -18px var(--glow-color);
 	}
 	.folder__link,

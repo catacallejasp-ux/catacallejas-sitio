@@ -8,10 +8,10 @@ interface Cta {
 	label: string;
 }
 interface Props {
-	/** Headline split in three so the middle part (the name) can be highlighted. */
+	/** Headline split in three so the middle part can be highlighted. */
 	before: string;
 	highlight: string;
-	after: string;
+	after?: string;
 	primaryCta: Cta;
 	secondaryCta: Cta;
 	portrait: { src: ImageMetadata; alt: string };
@@ -24,8 +24,8 @@ const { before, highlight, after, primaryCta, secondaryCta, portrait } = Astro.p
 		<div class="hero__text">
 			<h1 class="hero__title">
 				{before}{' '}
-				<span class="hero__highlight">{highlight}</span>{' '}
-				{after}
+				<span class="hero__highlight">{highlight}</span>
+				{after && <> {after}</>}
 			</h1>
 			<div class="hero__actions">
 				<Button href={primaryCta.href} icon>{primaryCta.label}</Button>
@@ -94,9 +94,15 @@ const { before, highlight, after, primaryCta, secondaryCta, portrait } = Astro.p
 		max-height: min(50vh, 24rem);
 		margin-inline: auto;
 	}
+	/* Phones and tablets: the portrait goes above the headline, small and aligned
+	   with the text. */
 	@media (max-width: 55.99rem) {
+		.hero__portrait {
+			order: -1;
+		}
 		.hero__portrait img {
-			max-height: 11rem;
+			max-height: 8rem;
+			margin-inline: 0;
 		}
 	}
 </style>

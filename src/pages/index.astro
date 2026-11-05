@@ -8,8 +8,8 @@ import DeviceMockup from '../components/DeviceMockup.astro';
 import Button from '../components/Button.astro';
 import TrajectoryBento from '../components/TrajectoryBento.astro';
 import retrato from '../assets/cata-ilustracion.png';
-import { perfil, logosClientes, pasosDemo, revisaTuPitch, postsLinkedIn } from '../data/cv';
-import LinkedInPosts from '../components/LinkedInPosts.astro';
+import { perfil, logosClientes, pasosDemo, revisaTuPitch } from '../data/cv';
+import Novedades from '../components/Novedades.astro';
 import { personJsonLd } from '../lib/seo';
 ---
 
@@ -20,9 +20,8 @@ import { personJsonLd } from '../lib/seo';
 >
 	<div class="home">
 		<Hero
-			before="Hola, soy"
-			highlight="Cata Callejas"
-			after="y te ayudo a hacer que las cosas pasen"
+			before="Hola, soy Cata Callejas y te ayudo a"
+			highlight="hacer que las cosas pasen"
 			primaryCta={{ href: '/artefactos', label: 'Revisar artefactos' }}
 			secondaryCta={{ href: '#contacto', label: 'Conversemos' }}
 			portrait={{ src: retrato, alt: 'Ilustración de Catalina Callejas' }}
@@ -124,7 +123,7 @@ import { personJsonLd } from '../lib/seo';
 						></span
 					>
 				</h2>
-				<LinkedInPosts posts={postsLinkedIn} />
+				<Novedades />
 			</div>
 		</section>
 
