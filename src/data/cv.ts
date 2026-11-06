@@ -21,11 +21,11 @@ export const cvPdf: { href: string; size?: string } | undefined = {
 
 export const sobreMi = {
 	texto:
-		'Product Designer y Profesora de Castellano de formación. Me apasiona el diseño de productos en todas sus aristas. Mi objetivo es mejorar las experiencias haciéndolas usables, accesibles y eficientes y, principalmente, contribuir a los objetivos de las organizaciones mejorando la calidad de vida de las personas.',
+		'IA Product Designer y profesora. Me apasiona el diseño de productos en todas sus aristas. Mi objetivo es mejorar las experiencias haciéndolas usables, accesibles y eficientes y, principalmente, contribuir a los objetivos de las organizaciones mejorando la calidad de vida de las personas.',
 	tags: [
 		'Product Designer',
 		'Experta en research y contenidos',
-		'Consultora UX',
+		'Experimentando IA',
 		'Especialista en e-learning',
 	],
 };
