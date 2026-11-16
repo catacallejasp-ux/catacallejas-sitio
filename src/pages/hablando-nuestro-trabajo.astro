@@ -8,6 +8,7 @@ import FeatureBand from '../components/FeatureBand.astro';
 import Button from '../components/Button.astro';
 import CtaBand from '../components/CtaBand.astro';
 import IntroPoints from '../components/IntroPoints.astro';
+import EvaluacionCharla from '../components/EvaluacionCharla.astro';
 import { perfil, revisaTuPitch, pasosDemo } from '../data/cv';
 
 // The deck is a static file of this site (public/hablando/presentacion.html); the rest
@@ -119,7 +120,9 @@ const puntos = [
 		</div>
 	</section>
 
-	<CtaBand title="¿Quieres una charla o taller para tu equipo?" layout="centered">
+	<EvaluacionCharla />
+
+	<CtaBand title="Lleva esta charla a tu equipo" layout="centered">
 		<svg
 			slot="icon"
 			viewBox="0 0 32 32"
@@ -131,9 +134,13 @@ const puntos = [
 			stroke-linecap="round"
 			stroke-linejoin="round"
 		>
-			<!-- microphone -->
-			<rect x="11" y="3" width="10" height="16" rx="5"></rect>
-			<path d="M7 15a9 9 0 0 0 18 0M16 24v5M11.5 29h9M11 9h3M11 13h3"></path>
+			<!-- a talk in front of a team: presentation screen and three people -->
+			<rect x="4" y="3" width="24" height="15" rx="2"></rect>
+			<path d="M9 13.5l4-4 3 3 6-6"></path>
+			<circle cx="9" cy="23.5" r="2"></circle>
+			<circle cx="16" cy="23.5" r="2"></circle>
+			<circle cx="23" cy="23.5" r="2"></circle>
+			<path d="M5.5 30a3.5 3.5 0 0 1 7 0M12.5 30a3.5 3.5 0 0 1 7 0M19.5 30a3.5 3.5 0 0 1 7 0"></path>
 		</svg>
 		<p class="cta-mail">
 			Escríbeme un correo a <a href={`mailto:${perfil.email}`}>{perfil.email}</a>

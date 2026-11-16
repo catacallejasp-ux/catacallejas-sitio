@@ -1,0 +1,226 @@
+---
+/**
+ * How attendees rated «Hablando nuestro trabajo»: a gradient bar from 1 to 5 that fills
+ * up to the overall score when it scrolls into view (the numbers of the scale appear as
+ * the marker passes them), then one sentence with the score that ends in keyword tags
+ * («…consideran que esta charla es [Clara] [Entretenida]…»).
+ * Data: src/data/evaluacion-charla.ts (the score is computed from the responses).
+ * Without JS, or with reduced motion, the bar is shown already filled with every number.
+ */
+import { notaGeneral, palabrasClave, promedio, formatoNota } from '../data/evaluacion-charla';
+
+const nota = promedio(notaGeneral);
+const media = formatoNota(nota);
+/** Position of the score on the 1–5 bar, in %. */
+const pos = ((nota - 1) / 4) * 100;
+const escala = [1, 2, 3, 4, 5].map((v) => ({ v, at: ((v - 1) / 4) * 100 }));
+---
+
+<section class="section eval" aria-labelledby="evaluacion-charla">
+	<div class="container">
+		<div
+			class="meter"
+			role="img"
+			aria-label={`${media} en una escala del 1 al 5`}
+			style={`--p: ${pos}%`}
+			data-meter
+			data-pos={pos}
+		>
+			<ol class="meter__scale" aria-hidden="true">
+				{
+					escala.map((e) => (
+						<li style={`left: ${e.at}%`} data-at={e.at}>
+							{e.v}
+							<svg
+								class="meter__star"
+								viewBox="0 0 24 24"
+								width="12"
+								height="12"
+								aria-hidden="true"
+							>
+								<path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z" />
+							</svg>
+						</li>
+					))
+				}
+			</ol>
+			<div class="meter__track">
+				<span class="meter__fill"></span>
+				<span class="meter__mark"></span>
+			</div>
+		</div>
+
+		<h2 id="evaluacion-charla" class="eval__title">
+			En una escala del 1 al 5, <span class="gradient-text">las personas</span> evalúan esta charla con{
+				' '
+			}
+			<span class="gradient-text eval__score"
+				>{media}<svg class="eval__score-star" viewBox="0 0 24 24" aria-hidden="true"
+					><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"
+					></path></svg
+				><span class="visually-hidden"> estrellas</span></span
+			> y consideran que esta charla es{' '}
+			{
+				palabrasClave.map((p, i) => (
+					<>
+						<span class="chip chip--strong eval__tag">{p}</span>
+						{i < palabrasClave.length - 2 && <span class="visually-hidden">, </span>}
+						{i === palabrasClave.length - 2 && <span class="visually-hidden"> y </span>}
+					</>
+				))
+			}
+		</h2>
+	</div>
+</section>
+
+<script>
+	// Fill the bar like a loader the first time it scrolls into view; each number of the
+	// scale appears when the marker reaches it.
+	const DURATION = 1800;
+	const ease = (t: number) => 1 - Math.pow(1 - t, 3);
+	const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+	document.querySelectorAll<HTMLElement>('[data-meter]').forEach((meter) => {
+		if (reduce || !('IntersectionObserver' in window)) return;
+		const target = Number(meter.dataset.pos);
+		const labels = [...meter.querySelectorAll<HTMLElement>('[data-at]')];
+		meter.classList.add('is-armed');
+		meter.style.setProperty('--p', '0%');
+
+		const run = () => {
+			const start = performance.now();
+			const step = (now: number) => {
+				const t = Math.min(1, (now - start) / DURATION);
+				const p = target * ease(t);
+				meter.style.setProperty('--p', `${p}%`);
+				// The marker stops at the score, so the last number appears when it lands.
+				labels.forEach((l) => {
+					if (p >= Math.min(Number(l.dataset.at), target) - 0.01) l.classList.add('is-shown');
+				});
+				if (t < 1) requestAnimationFrame(step);
+				else meter.classList.add('is-done');
+			};
+			requestAnimationFrame(step);
+		};
+
+		const io = new IntersectionObserver(
+			(entries) => {
+				if (!entries.some((e) => e.isIntersecting)) return;
+				io.disconnect();
+				run();
+			},
+			{ threshold: 0.6 },
+		);
+		io.observe(meter);
+	});
+</script>
+
+<style>
+	/* Gradient bar 1 → 5 with a marker at the score, full width of the page. */
+	/* Track edges line up with the page margins; the marker may overhang them. */
+	.meter {
+		margin-bottom: clamp(1.5rem, 3vw, 2rem);
+	}
+	.meter__track {
+		position: relative;
+		height: 14px;
+		border-radius: 999px;
+		background: light-dark(var(--neutral-100), var(--neutral-200));
+	}
+	/* The gradient spans the whole track; the fill reveals it up to --p. */
+	.meter__fill {
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		background: linear-gradient(90deg, var(--violet-200), var(--violet-500) 60%, var(--teal-500));
+		clip-path: inset(0 calc(100% - var(--p)) 0 0 round 999px);
+	}
+	.meter__mark {
+		position: absolute;
+		top: 50%;
+		left: var(--p);
+		width: 26px;
+		height: 26px;
+		border-radius: 50%;
+		background: var(--surface);
+		box-shadow:
+			inset 0 0 0 5px var(--violet-700),
+			0 4px 12px rgb(65 51 166 / 0.35);
+		transform: translate(-50%, -50%);
+	}
+	/* Scale above the bar: each number with a small star («1 ★ … 5 ★»). */
+	.meter__scale {
+		position: relative;
+		height: 1.5rem;
+		margin-bottom: 0.75rem;
+		padding: 0;
+		list-style: none;
+		font-size: 0.9rem;
+		font-variant-numeric: tabular-nums;
+		color: var(--ink-muted);
+	}
+	.meter__scale li {
+		position: absolute;
+		top: 0;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.2rem;
+		/* At left: 100% an absolute box has no room and would squeeze the star to 0. */
+		width: max-content;
+		--tx: -50%;
+		transform: translateX(var(--tx));
+		transition:
+			opacity 0.35s ease,
+			transform 0.35s ease;
+	}
+	/* The ends line up with the edges of the bar instead of overhanging them. */
+	.meter__scale li:first-child {
+		--tx: 0%;
+	}
+	.meter__scale li:last-child {
+		--tx: -100%;
+	}
+	.meter__star {
+		flex-shrink: 0;
+		fill: var(--violet-accent);
+	}
+	/* While loading, numbers wait hidden until the marker reaches them. */
+	.meter.is-armed .meter__scale li:not(.is-shown) {
+		opacity: 0;
+		transform: translate(var(--tx), -6px);
+	}
+
+	/* Sentence heading with the keyword tags inline at its end. */
+	.eval__title {
+		max-width: none;
+		font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.25rem);
+		font-weight: 600;
+		line-height: 1.45;
+		letter-spacing: -0.02em;
+		text-wrap: pretty;
+	}
+	.eval__title .gradient-text {
+		font-weight: 700;
+	}
+	/* «4,9 ★»: read as «4,9 estrellas». */
+	.eval__score {
+		white-space: nowrap;
+	}
+	.eval__score-star {
+		display: inline-block;
+		width: 0.8em;
+		height: 0.8em;
+		margin-left: 0.15em;
+		vertical-align: -0.05em;
+		fill: currentColor;
+	}
+	.eval__tag {
+		margin: 0.15rem 0.1rem;
+		padding: 0.15rem 0.85rem;
+		font-family: var(--font-display);
+		font-size: 0.75em;
+		font-weight: 600;
+		vertical-align: 0.1em;
+		white-space: nowrap;
+	}
+</style>
