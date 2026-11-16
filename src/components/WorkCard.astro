@@ -1,10 +1,11 @@
 ---
 /**
- * Project card (About page carousel), after the glass-card reference: the cover fills
- * the whole card and a frosted-glass panel rises over its lower part, so the photo
- * shows through, blurred, behind the number, title, role tags and «Leer caso».
- * The whole card is one link; «Leer caso» is styled as a secondary button inside it.
- * Contrast: dark text on thin white glass over a blurred, brightened photo.
+ * Project card (About page carousel). The cover fills the whole card and a dark violet
+ * shade rises from the bottom (same treatment as the article covers in «Palabras»),
+ * with the number, title, role tags and «Leer caso» in white over it.
+ * The whole card is one link; «Leer caso» is styled as a button inside it.
+ * Contrast: the shade is ≥ 0.7 opaque over the text area, so white text stays ≥ 4.5:1
+ * even over a white photo.
  */
 import type { ImageMetadata } from 'astro';
 import { Image } from 'astro:assets';
@@ -25,13 +26,6 @@ const { n, title, tags = [], href, cover, coverAlt, coverFocus = '50% 50%', id }
 ---
 
 <a class="work" href={href} id={id} draggable="false">
-	{
-		cover && (
-			<div class="work__backdrop" aria-hidden="true">
-				<Image src={cover} alt="" widths={[600]} sizes="600px" loading="lazy" />
-			</div>
-		)
-	}
 	<div class="work__media" style={`--focus: ${coverFocus}`}>
 		{
 			cover ? (
@@ -48,7 +42,7 @@ const { n, title, tags = [], href, cover, coverAlt, coverFocus = '50% 50%', id }
 			)
 		}
 	</div>
-	<div class="work__glass">
+	<div class="work__body">
 		<p class="work__n" aria-hidden="true">{String(n).padStart(2, '0')}</p>
 		<h3 class="work__title">{title}</h3>
 		{
@@ -60,7 +54,7 @@ const { n, title, tags = [], href, cover, coverAlt, coverFocus = '50% 50%', id }
 				</ul>
 			)
 		}
-		<span class="button button--ghost button--sm work__cta">Leer caso</span>
+		<span class="button button--sm work__cta">Leer caso</span>
 	</div>
 </a>
 
@@ -75,8 +69,8 @@ const { n, title, tags = [], href, cover, coverAlt, coverFocus = '50% 50%', id }
 		min-height: 27rem;
 		overflow: hidden;
 		border-radius: calc(var(--radius) * 1.6);
-		background: var(--violet-100);
-		color: var(--ink);
+		background: var(--surface-deep-2);
+		color: #fff;
 		text-decoration: none;
 		box-shadow: 0 24px 44px -26px rgb(65 51 166 / 0.55);
 		scroll-margin-top: 6rem;
@@ -95,29 +89,11 @@ const { n, title, tags = [], href, cover, coverAlt, coverFocus = '50% 50%', id }
 		outline-offset: 4px;
 	}
 
-	/* The photo, whole, in the clear upper part of the card: its box ends 6rem under
-	   the glass and fades out there, so the subject sits above the glass. */
+	/* The photo fills the card. */
 	.work__media {
-		position: absolute;
-		inset: 0 0 auto;
-		height: calc(100% - 16.5rem + 6rem);
-		z-index: -1;
-		-webkit-mask-image: linear-gradient(180deg, #000 72%, transparent);
-		mask-image: linear-gradient(180deg, #000 72%, transparent);
-	}
-	/* The same photo, blurred and filling the card, behind the glass. */
-	.work__backdrop {
 		position: absolute;
 		inset: 0;
 		z-index: -2;
-		overflow: hidden;
-	}
-	.work__backdrop :global(img) {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		filter: blur(18px) saturate(1.2);
-		transform: scale(1.2);
 	}
 	.work__media :global(img) {
 		width: 100%;
@@ -137,46 +113,38 @@ const { n, title, tags = [], href, cover, coverAlt, coverFocus = '50% 50%', id }
 		background: transparent;
 	}
 
-	/* Frosted panel across the lower part of the photo, full width with large rounded
-	   top corners and a soft highlight, so it reads as glass laid on the image. */
-	.work__glass {
-		position: relative;
+	/* Dark violet shade rising from the bottom, under the text. */
+	.work::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		background: linear-gradient(
+			to top,
+			rgb(25 22 58 / 0.94) 0%,
+			rgb(25 22 58 / 0.82) 38%,
+			rgb(25 22 58 / 0.45) 62%,
+			transparent 85%
+		);
+		pointer-events: none;
+	}
+
+	.work__body {
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
 		gap: 0.55rem;
-		/* Same height on every card, whatever the title or number of tags (fits a
-		   two-line title and two rows of tags). */
-		height: 16.5rem;
-		padding: 1.3rem 1.1rem 1.2rem;
+		padding: 1.4rem 1.25rem 1.25rem;
 		text-align: left;
-		border-radius: calc(var(--radius) * 1.6) calc(var(--radius) * 1.6) 0 0;
-		border-top: 1px solid var(--edge);
-		/* The blurred photo shows through, frosting towards the bottom. The top is
-		   dense enough (72%) that the number and title keep AA on the brightest photo
-		   in both themes (measured on every card, nov 2026). */
-		background: linear-gradient(
-			180deg,
-			color-mix(in srgb, var(--paper) 72%, transparent) 0%,
-			color-mix(in srgb, var(--paper) 78%, transparent) 45%,
-			color-mix(in srgb, var(--paper) 85%, transparent) 100%
-		);
-		box-shadow: inset 0 1px 0 var(--edge);
-		-webkit-backdrop-filter: blur(12px) saturate(160%) brightness(1.08);
-		backdrop-filter: blur(12px) saturate(160%) brightness(1.08);
-	}
-	@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-		.work__glass {
-			background: color-mix(in srgb, var(--paper) 94%, transparent);
-		}
 	}
 	.work__n {
 		font-family: var(--font-display);
 		font-size: 0.9rem;
 		font-weight: 700;
-		color: var(--violet-900);
+		color: var(--teal-200);
 	}
 	.work__title {
+		color: #fff;
 		font-size: 1.3rem;
 		font-weight: 700;
 		letter-spacing: -0.02em;
@@ -194,24 +162,27 @@ const { n, title, tags = [], href, cover, coverAlt, coverFocus = '50% 50%', id }
 	.work__tags li {
 		padding: 0.2rem 0.5rem;
 		border-radius: 6px;
-		background: color-mix(in srgb, var(--paper) 70%, transparent);
-		color: var(--violet-900);
+		background: rgb(255 255 255 / 0.14);
+		box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.22);
+		color: #fff;
 		font-size: 0.9rem;
 		font-weight: 500;
 	}
-	/* Darker than the default secondary button: it sits on glass, not on a flat
-	   surface. --violet-900 on the frosted bottom of the panel stays above 4.5:1. */
+	/* White outline button on the shade; fills white on card hover. */
 	.work__cta {
 		align-self: flex-end;
-		margin-top: auto;
-		color: var(--violet-900);
+		margin-top: 0.6rem;
+		color: #fff;
 		font-weight: 600;
-		box-shadow: inset 0 0 0 1.5px var(--violet-900);
+		background: transparent;
+		box-shadow: inset 0 0 0 1.5px #fff;
+		transition:
+			background 0.2s ease,
+			color 0.2s ease;
 	}
-	/* The whole card is the link: show the secondary button's hover on card hover. */
 	.work:hover .work__cta {
+		background: #fff;
 		color: var(--violet-900);
-		box-shadow: inset 0 0 0 2.5px var(--violet-900);
 	}
 	@media (prefers-reduced-motion: reduce) {
 		.work,

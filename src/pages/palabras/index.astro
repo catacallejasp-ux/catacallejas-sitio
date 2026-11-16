@@ -1,0 +1,53 @@
+---
+/**
+ * «Palabras»: the page intro shared with Hablando and Artefactos (title, divider with a
+ * tilted tag, lead), then every article as a list of tinted bars.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageIntro from '../../components/PageIntro.astro';
+import IntroPoints from '../../components/IntroPoints.astro';
+import PalabrasList from '../../components/PalabrasList.astro';
+import { perfil } from '../../data/cv';
+import { getPalabras, urlPalabra, isoDate } from '../../lib/palabras';
+
+const items = await getPalabras();
+const site = Astro.site;
+
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'Blog',
+	name: `Palabras · ${perfil.nombre}`,
+	inLanguage: 'es-CL',
+	author: { '@type': 'Person', name: perfil.nombre },
+	...(site ? { url: new URL('/palabras', site).href } : {}),
+	blogPost: items.map((p) => ({
+		'@type': 'BlogPosting',
+		headline: p.data.title,
+		datePublished: isoDate(p.data.date),
+		keywords: p.data.tags.join(', '),
+		...(site ? { url: new URL(urlPalabra(p.id), site).href } : {}),
+	})),
+};
+---
+
+<BaseLayout
+	title={`Palabras e ideas · ${perfil.nombre}`}
+	description="Artículos tipo blog de Cata Callejas sobre diseño de producto, UX Writing, comunicación y comunidades en tecnología."
+	current="palabras"
+	jsonLd={jsonLd}
+>
+	<PageIntro crumb="Palabras" title="Palabras e ideas" divider={false}>
+		<IntroPoints
+			slot="lead"
+			tag="Blogueando la vida"
+			tagUnderEm={4.3}
+			lead="Artículos tipo blog con mi toque personal; una mirada sobre diseño de producto, comunicación y comunidades en tecnología."
+		/>
+	</PageIntro>
+
+	<section class="section section--tinted section--after-intro" aria-label="Artículos">
+		<div class="container">
+			<PalabrasList variant="bars" headingLevel={2} />
+		</div>
+	</section>
+</BaseLayout>

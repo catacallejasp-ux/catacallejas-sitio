@@ -10,6 +10,11 @@ import TrajectoryBento from '../components/TrajectoryBento.astro';
 import retrato from '../assets/cata-ilustracion.png';
 import { perfil, logosClientes, pasosDemo, revisaTuPitch } from '../data/cv';
 import Novedades from '../components/Novedades.astro';
+import PalabrasList from '../components/PalabrasList.astro';
+import { getPalabras } from '../lib/palabras';
+
+// «Ver todas las palabras» appears only when there are more articles than the home shows (3).
+const hayMasPalabras = (await getPalabras()).length > 3;
 import { personJsonLd } from '../lib/seo';
 ---
 
@@ -124,6 +129,25 @@ import { personJsonLd } from '../lib/seo';
 					>
 				</h2>
 				<Novedades />
+			</div>
+		</section>
+
+		<!-- Blog · Palabras -->
+		<section class="section section--flush section--tight" aria-labelledby="palabras-ideas">
+			<div class="container">
+				<div class="words-head">
+					<h2 id="palabras-ideas" class="section-title band-title">
+						Algunas palabras e <span class="gradient-text">ideas</span>
+					</h2>
+					{
+						hayMasPalabras && (
+							<a class="text-link" href="/palabras">
+								Ver todas las palabras
+							</a>
+						)
+					}
+				</div>
+				<PalabrasList max={3} />
 			</div>
 		</section>
 
@@ -298,5 +322,16 @@ import { personJsonLd } from '../lib/seo';
 				stroke-dashoffset: 0;
 			}
 		}
+	}
+	.words-head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 0.5rem 1.5rem;
+		margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
+	}
+	.words-head .band-title {
+		margin-bottom: 0;
 	}
 </style>

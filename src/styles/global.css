@@ -255,6 +255,15 @@ a {
 	color: var(--teal-800);
 }
 
+/* Stronger tag for the blog («Palabras»): visible against the page in both themes.
+   Text: light #31248d on #dad4ff = 8.4:1 · dark #e3deff on #322a73 = 9.4:1 (AA ≥ 4.5).
+   Border vs page: light 1.85:1, dark 2.9:1 (decorative; tags are not interactive). */
+.chip--strong {
+	background: var(--violet-200);
+	color: var(--violet-900);
+	box-shadow: inset 0 0 0 1px var(--violet-300);
+}
+
 /* ------------------------------------------------------------------
 	Buttons. Primary = solid fill, no border, no gradient, no shadow.
 	Secondary (ghost) = border only. Both pill-shaped, ≥ 44px tall.

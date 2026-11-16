@@ -11,6 +11,7 @@ const { current } = Astro.props;
 const links: { id: Section; href: string; texto: string }[] = [
 	{ id: 'hablando', href: '/hablando-nuestro-trabajo', texto: 'Hablando' },
 	{ id: 'artefactos', href: '/artefactos', texto: 'Artefactos' },
+	{ id: 'palabras', href: '/palabras', texto: 'Palabras' },
 ];
 ---
 
@@ -192,7 +193,6 @@ const links: { id: Section; href: string; texto: string }[] = [
 			if (!motion.matches) return done();
 			drawer.addEventListener('transitionend', done, { once: true });
 			setTimeout(done, 450); // in case transitionend never fires
-
 		};
 
 		toggle.addEventListener('click', open);

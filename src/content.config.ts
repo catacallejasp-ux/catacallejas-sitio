@@ -138,7 +138,35 @@ const iniciativas = defineCollection({
 		}),
 });
 
+/**
+ * «Palabras»: articles, one Markdown file each, read at /palabras/<file name>.
+ * The home shows the three most recent in «Algunas palabras e ideas».
+ */
+const palabras = defineCollection({
+	loader: md('palabras'),
+	schema: ({ image }) =>
+		z.object({
+			title: z.string(),
+			/** Meta description and summary in the article header. */
+			description: z.string(),
+			date: z.coerce.date(),
+			/** Topic tags: what the article is about, in the words people search for. */
+			tags: z.array(z.string()).min(1),
+			cover: image(),
+			coverAlt: z.string(),
+			/** Focus of the cover in the wide banner, as CSS object-position («50% 32%»). */
+			coverFocus: z.string().optional(),
+			/** Photo credit, for stock photos (Unsplash). Leave out for Cata's own photos. */
+			coverCredit: z.object({ name: z.string(), url: z.url() }).optional(),
+			/** Where it was first published. */
+			original: z.object({ name: z.string(), url: z.url() }).optional(),
+			readingMinutes: z.number().int().positive(),
+			draft: z.boolean().default(false),
+		}),
+});
+
 export const collections = {
+	palabras,
 	proyectos,
 	trayectoria,
 	// Sections no longer on the site (casos, eventos, charlas…) are kept in
