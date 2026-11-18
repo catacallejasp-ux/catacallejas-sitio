@@ -13,8 +13,26 @@ interface Props {
 }
 const { items, color } = Astro.props;
 
-const pos = (i: { x: number; y: number; w: number; rot?: number }) =>
-	`left:${i.x}%;top:${i.y}%;width:${i.w}%;--rot:${i.rot ?? 0}deg`;
+type ConLugar = {
+	x: number;
+	y: number;
+	w: number;
+	rot?: number;
+	movil?: { x?: number; y?: number; w?: number; rot?: number };
+};
+// Desktop placement plus optional phone placement (see `movil` in the data).
+const pos = (i: ConLugar) => {
+	const m = i.movil ?? {};
+	return [
+		`--x:${i.x}%;--y:${i.y}%;--w:${i.w}%;--rot:${i.rot ?? 0}deg`,
+		m.x !== undefined ? `--mx:${m.x}%` : '',
+		m.y !== undefined ? `--my:${m.y}%` : '',
+		m.w !== undefined ? `--mw:${m.w}%` : '',
+		m.rot !== undefined ? `--mrot:${m.rot}deg` : '',
+	]
+		.filter(Boolean)
+		.join(';');
+};
 ---
 
 <div class="zona" style={`--tinta:${color}`}>
@@ -197,14 +215,9 @@ const pos = (i: { x: number; y: number; w: number; rot?: number }) =>
 					);
 				case 'ficha':
 					return (
-						<dl class="s-ficha" style={pos(it)}>
-							{it.filas.map(([k, v]) => (
-								<div>
-									<dt>{k}</dt>
-									<dd>{v}</dd>
-								</div>
-							))}
-						</dl>
+						<p class="s-ficha" style={pos(it)}>
+							{it.texto}
+						</p>
 					);
 				case 'enlace':
 					return (
@@ -369,7 +382,7 @@ const pos = (i: { x: number; y: number; w: number; rot?: number }) =>
 	/* Ink on paper is fixed in both themes (the papers stay light). Contrast, worst case
 	   over the four papers, post-its, cards and the violet grid lines (WCAG AA ≥ 4.5:1):
 	   ink #2b2740 ≥ 11.7:1 · violet #4133a6 (the site's --brand-800) ≥ 5.4:1 · faint handwriting (ink at 72%)
-	   ≥ 5.2:1 · ticket labels in ink ≥ 11.7:1.
+	   ≥ 5.2:1 · ticket text in ink ≥ 11.7:1.
 	   Small text never goes below 10–13px, however narrow the canvas. */
 	.zona {
 		--ink-papel: #2b2740;
@@ -383,8 +396,24 @@ const pos = (i: { x: number; y: number; w: number; rot?: number }) =>
 	}
 	.zona > * {
 		position: absolute;
+		left: var(--x);
+		top: var(--y);
+		width: var(--w);
 		margin: 0;
 		transform: rotate(var(--rot));
+	}
+	/* Phones: each half is a little taller, so the collage breathes once texts hit
+	   their minimum size; items can also take their own phone placement. */
+	@media (max-width: 55.99rem) {
+		.zona {
+			aspect-ratio: 4 / 5.8;
+		}
+		.zona > * {
+			left: var(--mx, var(--x));
+			top: var(--my, var(--y));
+			width: var(--mw, var(--w));
+			transform: rotate(var(--mrot, var(--rot)));
+		}
 	}
 	.s-adorno {
 		height: auto;
@@ -902,28 +931,11 @@ const pos = (i: { x: number; y: number; w: number; rot?: number }) =>
 		border-left: 0.4cqi dashed #cfc6b0;
 		box-shadow: 0 1cqi 2cqi -1cqi rgb(43 39 64 / 0.35);
 		font-family: ui-monospace, 'Courier New', monospace;
-	}
-	.s-ficha div {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0 2cqi;
-		align-items: baseline;
-	}
-	/* Labels in full ink and bold: thin monospace caps read too light otherwise. */
-	.s-ficha dt {
-		font-size: max(11.5px, 2.9cqi);
-		font-weight: 700;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-		color: var(--ink-papel);
-	}
-	.s-ficha dd {
-		margin: 0;
 		font-size: max(12px, 3.6cqi);
 		font-weight: 700;
+		line-height: 1.35;
 		color: var(--ink-papel);
 	}
-
 	/* Link on a paper tag */
 	.s-enlace {
 		display: inline-block;

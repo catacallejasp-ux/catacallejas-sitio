@@ -54,6 +54,9 @@ interface Lugar {
 	y: number;
 	w: number;
 	rot?: number;
+	/** Placement on phones (and narrow tablets), where texts can't shrink below their
+	 *  minimum size; any field left out keeps the desktop value. */
+	movil?: { x?: number; y?: number; w?: number; rot?: number };
 }
 
 /** Photo: polaroid (caption below) or thin white border; held by tape or a paperclip. */
@@ -136,10 +139,10 @@ export interface Cifra extends Lugar {
 	numero: string;
 	texto: string;
 }
-/** Ticket-like card with typed rows: rol, fechas, lugar. */
+/** Ticket-like card with one typed line: «rol · fechas». */
 export interface Ficha extends Lugar {
 	tipo: 'ficha';
-	filas: [string, string][];
+	texto: string;
 }
 /** A link written on a paper tag. */
 export interface Enlace extends Lugar {
@@ -191,7 +194,6 @@ export interface Comunidad {
 	logoFondo?: string;
 	/** Summary card on the home page («Haciendo comunidad»). */
 	resumen: {
-		rol: string;
 		anios: string;
 		portada: ImageMetadata;
 		alt: string;
@@ -213,7 +215,6 @@ export const comunidades: Comunidad[] = [
 		fondo: 'puntos',
 		logo: mvLogo,
 		resumen: {
-			rol: 'Facilitadora de +Voces conversando',
 			anios: '2026',
 			portada: mvAfiche,
 			alt: 'Afiche de +Voces conversando del 29 de octubre.',
@@ -231,11 +232,7 @@ export const comunidades: Comunidad[] = [
 			},
 			{
 				tipo: 'ficha',
-				filas: [
-					['Rol', 'Voluntaria'],
-					['Proyecto', '+Voces conversando'],
-					['Proyecto', 'Nuestra casa'],
-				],
+				texto: 'Voluntaria · 2026',
 				x: 50,
 				y: 8,
 				w: 46,
@@ -265,7 +262,16 @@ export const comunidades: Comunidad[] = [
 				w: 50,
 				rot: 2,
 			},
-			{ tipo: 'flecha', variante: 3, voltear: true, x: 40, y: 80, w: 14, rot: -10 },
+			{
+				tipo: 'flecha',
+				variante: 3,
+				voltear: true,
+				x: 40,
+				y: 80,
+				w: 14,
+				rot: -10,
+				movil: { x: 38, y: 89, w: 12 },
+			},
 			{
 				tipo: 'enlace',
 				texto: 'Míralo en Instagram ↗',
@@ -275,6 +281,7 @@ export const comunidades: Comunidad[] = [
 				y: 80,
 				w: 40,
 				rot: -3,
+				movil: { y: 87 },
 			},
 		],
 		der: [
@@ -343,7 +350,6 @@ export const comunidades: Comunidad[] = [
 		logo: logo95,
 		// Left: 2025 · right: 2026 (10 years)
 		resumen: {
-			rol: 'Facilitadora de mesas de conversación',
 			anios: '2025 · 2026',
 			portada: n25Microfono,
 			alt: 'Cata con micrófono, moderando una conversación en 9punto5.',
@@ -511,7 +517,6 @@ export const comunidades: Comunidad[] = [
 		fondo: 'rayas',
 		logo: mmLogo,
 		resumen: {
-			rol: 'Coordinadora track regiones',
 			anios: '2023 – 2025',
 			portada: mmEquipoRegiones,
 			alt: 'Seis mujeres de +Mujeres en UX posan juntas y sonríen.',
@@ -530,15 +535,12 @@ export const comunidades: Comunidad[] = [
 			{ tipo: 'titulo', texto: 'Track regiones', x: 52, y: 1, w: 46, rot: -6 },
 			{
 				tipo: 'ficha',
-				filas: [
-					['Rol', 'Coordinadora track regiones'],
-					['Fechas', '2023 – 2025'],
-					['Lugar', 'Valparaíso'],
-				],
+				texto: 'Coordinadora track regiones · 2023 – 2025',
 				x: 54,
 				y: 25,
 				w: 42,
 				rot: 3,
+				movil: { y: 22, w: 44 },
 			},
 			{
 				tipo: 'foto',
@@ -561,6 +563,7 @@ export const comunidades: Comunidad[] = [
 				y: 51,
 				w: 34,
 				rot: 3,
+				movil: { x: 58, y: 57 },
 			},
 			{
 				tipo: 'recorte',
@@ -571,6 +574,7 @@ export const comunidades: Comunidad[] = [
 				y: 64,
 				w: 62,
 				rot: 2,
+				movil: { y: 68 },
 			},
 			{
 				tipo: 'recorte',
@@ -580,6 +584,7 @@ export const comunidades: Comunidad[] = [
 				y: 75,
 				w: 18,
 				rot: 10,
+				movil: { x: 78, y: 76, w: 16 },
 			},
 			{
 				tipo: 'enlace',
@@ -589,6 +594,7 @@ export const comunidades: Comunidad[] = [
 				y: 90,
 				w: 44,
 				rot: -3,
+				movil: { y: 93 },
 			},
 		],
 		der: [
@@ -665,9 +671,8 @@ export const comunidades: Comunidad[] = [
 		fondo: 'puntos',
 		logo: logoCirculo,
 		logoFondo: '#3f3a44',
-		// Data from Cata's talk «Círculo de Mujeres» (Design Day 2024 de Bci).
+		// Figures from Cata's own presentation about the Círculo de Mujeres.
 		resumen: {
-			rol: 'Coordinadora',
 			anios: '2022 – 2025',
 			portada: cmGrupoCirculo,
 			alt: 'Foto grupal del Círculo de Mujeres con los brazos en alto.',
@@ -678,10 +683,7 @@ export const comunidades: Comunidad[] = [
 			{ tipo: 'etiqueta', texto: 'BBK + 2BRAINS', x: 8, y: 25, w: 40, rot: -2 },
 			{
 				tipo: 'ficha',
-				filas: [
-					['Rol', 'Coordinadora'],
-					['Fechas', '2022 – 2025'],
-				],
+				texto: 'Coordinadora · 2022 – 2025',
 				x: 56,
 				y: 23,
 				w: 40,
@@ -792,16 +794,6 @@ export const comunidades: Comunidad[] = [
 				y: 76,
 				w: 24,
 				rot: 8,
-			},
-			{
-				tipo: 'nota',
-				papel: 'escrito',
-				tam: 4.6,
-				texto: 'Lo conté en el Design Day 2024 de Bci ✨',
-				x: 3,
-				y: 90,
-				w: 52,
-				rot: -2,
 			},
 		],
 	},

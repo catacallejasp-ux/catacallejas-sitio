@@ -4,7 +4,7 @@
  * out like a pile on a table — same papers, patterns and top tabs as on that page.
  * Each card links to its sheet: /voluntariado#<id> opens that tab.
  * Wide screens: one row, cards slightly rotated and overlapping; hovering or focusing a
- * card lifts it to the front. Phones: a 2 × 2 grid, barely rotated.
+ * card lifts it to the front. Tablets: a 2 × 2 grid; phones: one sideways card per row.
  * Paper and ink keep fixed colours in both themes (the paper is an object), as in the
  * Voluntariado page: ink #2b2740 ≥ 11.7:1 and violet #4133a6 ≥ 5.4:1 on every paper
  * (dark mode: paper in shadow, ink ≥ 9.9:1, violet ≥ 5.4:1).
@@ -39,11 +39,14 @@ const giros = [-4, 2.5, -2, 3.5];
 								loading="lazy"
 							/>
 						</span>
-						<span class="hoja-inicio__anios">{c.resumen.anios}</span>
-						<span class="hoja-inicio__rol">{c.resumen.rol}</span>
-						<span class="hoja-inicio__ver">
-							Revisar voluntariado
-							<span aria-hidden="true">→</span>
+						<span class="hoja-inicio__pie">
+							<span class="hoja-inicio__anios">{c.resumen.anios}</span>
+							<span class="hoja-inicio__ver">
+								<span class="visually-hidden">Revisar voluntariado</span>
+								<svg viewBox="0 0 24 24" aria-hidden="true">
+									<path d="M5 12h14M13 6l6 6-6 6" />
+								</svg>
+							</span>
 						</span>
 					</span>
 				</a>
@@ -184,7 +187,7 @@ const giros = [-4, 2.5, -2, 3.5];
 		transform: rotate(-3deg);
 	}
 	.hoja-inicio__papel {
-		grid-template-rows: minmax(0, 1fr) auto auto auto;
+		grid-template-rows: minmax(0, 1fr) auto;
 	}
 
 	/* Paper tape with typed years, overlapping the picture. */
@@ -201,36 +204,77 @@ const giros = [-4, 2.5, -2, 3.5];
 		transform: rotate(-2deg);
 		box-shadow: 0 2px 4px rgb(43 39 64 / 0.15);
 	}
-	.hoja-inicio__rol {
-		margin-top: 0.5rem;
-		font-family: var(--font-caveat), cursive;
-		font-size: max(16px, 9cqi);
-		font-weight: 700;
-		line-height: 1.05;
-		text-align: center;
-		color: var(--azul);
-	}
-	/* Visible call to action: the site's primary pill (white on #6754e0 = 5.36:1). */
-	.hoja-inicio__ver {
-		display: inline-flex;
+	/* Call to action: an arrow in the site's primary violet circle (white on #6754e0
+	   = 5.36:1), next to the years; its name is visually hidden text. */
+	/* Years tape and arrow side by side under the picture (clear of the next card,
+	   which overlaps this one's right edge in the fanned row). */
+	.hoja-inicio__pie {
+		display: flex;
 		align-items: center;
-		gap: 0.4rem;
-		margin-top: 0.6rem;
-		padding: 0.45rem 0.95rem;
-		border-radius: 999px;
+		gap: 0.6rem;
+		margin-top: -0.9rem;
+	}
+	.hoja-inicio__pie .hoja-inicio__anios {
+		margin-top: 0;
+	}
+	.hoja-inicio__ver {
+		flex: none;
+		display: grid;
+		place-items: center;
+		width: 44px;
+		height: 44px;
+		border-radius: 50%;
 		background: var(--violet-600);
 		color: #fff;
-		font-family: var(--font-display);
-		font-size: 0.82rem;
-		font-weight: 600;
-		line-height: 1.2;
-		white-space: nowrap;
-		box-shadow: 0 6px 14px -8px rgb(65 51 166 / 0.7);
-		transition: background-color 0.15s ease;
+		box-shadow: 0 6px 14px -6px rgb(65 51 166 / 0.7);
+		transition:
+			background-color 0.15s ease,
+			transform 0.15s ease;
+	}
+	.hoja-inicio__ver svg {
+		width: 22px;
+		height: 22px;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 2.2;
+		stroke-linecap: round;
+		stroke-linejoin: round;
 	}
 	.hoja-inicio__enlace:hover .hoja-inicio__ver,
 	.hoja-inicio__enlace:focus-visible .hoja-inicio__ver {
 		background: var(--brand-700);
+		transform: translateX(3px);
+	}
+
+	/* Phones: one card per row, laid out sideways (picture left, years right, the arrow
+	   in the corner), so everything has room and the stack stays short. */
+	@media (max-width: 35.99rem) {
+		.hojas-inicio {
+			grid-template-columns: 1fr;
+			gap: 1.75rem;
+		}
+		.hoja-inicio__papel {
+			aspect-ratio: auto;
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+			grid-template-rows: auto;
+			align-items: center;
+			justify-items: start;
+			column-gap: 0.9rem;
+			min-height: 10rem;
+			padding: 1rem;
+		}
+		.hoja-inicio__foto {
+			height: 8.5rem;
+		}
+		.hoja-inicio__pie {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 0.75rem;
+			margin-top: 0;
+		}
+		.hoja-inicio__anios {
+			font-size: 0.85rem;
+		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {
