@@ -23,7 +23,7 @@ const giros = [-4, 2.5, -2, 3.5];
 				style={`--papel:${c.papel};--tinta:${c.color};--giro:${giros[i % giros.length]}deg;--i:${i}`}
 			>
 				<a class="hoja-inicio__enlace" href={`/voluntariado#${c.id}`}>
-					<span class="hoja-inicio__tab">{c.nombre}</span>
+					<span class="hoja-inicio__tab" aria-hidden="true" />
 					<span class="hoja-inicio__papel">
 						<span
 							class:list={[
@@ -39,13 +39,16 @@ const giros = [-4, 2.5, -2, 3.5];
 								loading="lazy"
 							/>
 						</span>
-						<span class="hoja-inicio__pie">
-							<span class="hoja-inicio__anios">{c.resumen.anios}</span>
-							<span class="hoja-inicio__ver">
-								<span class="visually-hidden">Revisar voluntariado</span>
-								<svg viewBox="0 0 24 24" aria-hidden="true">
-									<path d="M5 12h14M13 6l6 6-6 6" />
-								</svg>
+						<span class="hoja-inicio__texto">
+							<h3 class="hoja-inicio__nombre">{c.nombre}</h3>
+							<span class="hoja-inicio__pie">
+								<span class="hoja-inicio__anios">{c.resumen.anios}</span>
+								<span class="hoja-inicio__ver">
+									<span class="visually-hidden">Revisar voluntariado</span>
+									<svg viewBox="0 0 24 24" aria-hidden="true">
+										<path d="M5 12h14M13 6l6 6-6 6" />
+									</svg>
+								</span>
 							</span>
 						</span>
 					</span>
@@ -113,20 +116,36 @@ const giros = [-4, 2.5, -2, 3.5];
 	}
 
 	/* Paper tab on the top edge, same paper as the card. */
+	/* Blank paper flap on the top edge (the name is inside the card). */
 	.hoja-inicio__tab {
 		position: relative;
 		z-index: 1;
-		display: inline-block;
+		display: block;
+		width: 38%;
+		height: 1.5rem;
 		margin-left: 12px;
 		margin-bottom: -2px;
-		padding: 0.5rem 0.9rem calc(0.5rem + 2px);
 		border-radius: 12px 12px 0 0;
 		background: var(--papel-hoja);
-		font-family: var(--font-display);
-		font-size: 0.85rem;
-		font-weight: 600;
-		line-height: 1.15;
 		box-shadow: 0 -2px 6px -2px rgb(20 14 70 / 0.16);
+	}
+
+	/* Name above the years. */
+	.hoja-inicio__texto {
+		display: grid;
+		justify-items: center;
+		gap: 0.5rem;
+		margin-top: 0.75rem;
+		text-align: center;
+	}
+	.hoja-inicio__nombre {
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: 1.05rem;
+		font-weight: 600;
+		line-height: 1.2;
+		letter-spacing: -0.01em;
+		color: var(--ink-papel);
 	}
 
 	.hoja-inicio__papel {
@@ -212,7 +231,6 @@ const giros = [-4, 2.5, -2, 3.5];
 		display: flex;
 		align-items: center;
 		gap: 0.6rem;
-		margin-top: -0.9rem;
 	}
 	.hoja-inicio__pie .hoja-inicio__anios {
 		margin-top: 0;
@@ -246,8 +264,8 @@ const giros = [-4, 2.5, -2, 3.5];
 		transform: translateX(3px);
 	}
 
-	/* Phones: one card per row, laid out sideways (picture left, years right, the arrow
-	   in the corner), so everything has room and the stack stays short. */
+	/* Phones: one card per row, laid out sideways (picture left; name, years and arrow
+	   right), so everything has room and the stack stays short. */
 	@media (max-width: 35.99rem) {
 		.hojas-inicio {
 			grid-template-columns: 1fr;
@@ -266,11 +284,13 @@ const giros = [-4, 2.5, -2, 3.5];
 		.hoja-inicio__foto {
 			height: 8.5rem;
 		}
-		.hoja-inicio__pie {
-			flex-direction: column;
-			align-items: flex-start;
-			gap: 0.75rem;
+		.hoja-inicio__texto {
+			justify-items: start;
 			margin-top: 0;
+			text-align: left;
+		}
+		.hoja-inicio__pie {
+			flex-wrap: wrap;
 		}
 		.hoja-inicio__anios {
 			font-size: 0.85rem;
