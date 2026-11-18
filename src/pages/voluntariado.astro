@@ -1,0 +1,33 @@
+---
+/**
+ * «Voluntariado» (formerly «Comunidades»): the page intro shared with the other sections (title, divider with a
+ * tilted tag, lead), then the scrapbook canvases, one per community. Content: src/data/comunidades.ts.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageIntro from '../components/PageIntro.astro';
+import IntroPoints from '../components/IntroPoints.astro';
+import ScrapLienzos from '../components/ScrapLienzos.astro';
+import { perfil } from '../data/cv';
+---
+
+<BaseLayout
+	title={`Voluntariado · ${perfil.nombreCorto}`}
+	description="El voluntariado de Cata Callejas en comunidades de diseño y tecnología: fotos, videos y notas de lo que ha hecho en cada uno."
+	current="voluntariado"
+>
+	<PageIntro crumb="Voluntariado" title="Voluntariado" divider={false}>
+		<IntroPoints
+			slot="lead"
+			tag="Haciendo comunidad"
+			tagUnderEm={6.2}
+			lead="No soy solo una profesional sino que también una persona interesada por lo social, las comunidades y el voluntariado. Acá te cuento un poco de lo que han sido estos últimos años de facilitar y coordinar espacios en el mundo de la tecnología. Solo un resumen de lo que han sido +10 años de voluntaria."
+		/>
+	</PageIntro>
+
+	<section class="section section--tinted section--after-intro" aria-labelledby="scrap-titulo">
+		<div class="container">
+			<h2 id="scrap-titulo" class="visually-hidden">Mis voluntariados</h2>
+			<ScrapLienzos />
+		</div>
+	</section>
+</BaseLayout>

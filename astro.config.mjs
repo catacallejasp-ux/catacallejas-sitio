@@ -58,5 +58,25 @@ export default defineConfig({
 			subsets: ['latin', 'latin-ext'],
 			fallbacks: ['system-ui', 'sans-serif'],
 		},
+		{
+			// Handwriting for the «Comunidades» scrapbook only (not preloaded).
+			provider: fontProviders.google(),
+			name: 'Caveat',
+			cssVariable: '--font-caveat',
+			weights: [500, 700],
+			styles: ['normal'],
+			subsets: ['latin', 'latin-ext'],
+			fallbacks: ['cursive'],
+		},
+		{
+			// Script titles of the «Comunidades» scrapbook (not preloaded).
+			provider: fontProviders.google(),
+			name: 'Dancing Script',
+			cssVariable: '--font-script',
+			weights: [600, 700],
+			styles: ['normal'],
+			subsets: ['latin', 'latin-ext'],
+			fallbacks: ['cursive'],
+		},
 	],
 });

@@ -1,0 +1,241 @@
+---
+/**
+ * Home «Mis voluntariados»: the four «Voluntariado» sheets as small paper cards fanned
+ * out like a pile on a table — same papers, patterns and top tabs as on that page.
+ * Each card links to its sheet: /voluntariado#<id> opens that tab.
+ * Wide screens: one row, cards slightly rotated and overlapping; hovering or focusing a
+ * card lifts it to the front. Phones: a 2 × 2 grid, barely rotated.
+ * Paper and ink keep fixed colours in both themes (the paper is an object), as in the
+ * Voluntariado page: ink #2b2740 ≥ 11.7:1 and violet #4133a6 ≥ 5.4:1 on every paper
+ * (dark mode: paper in shadow, ink ≥ 9.9:1, violet ≥ 5.4:1).
+ */
+import { Image } from 'astro:assets';
+import { comunidades } from '../data/comunidades';
+
+const giros = [-4, 2.5, -2, 3.5];
+---
+
+<ul class="hojas-inicio">
+	{
+		comunidades.map((c, i) => (
+			<li
+				class:list={['hoja-inicio', `hoja-inicio--${c.fondo ?? 'puntos'}`]}
+				style={`--papel:${c.papel};--tinta:${c.color};--giro:${giros[i % giros.length]}deg;--i:${i}`}
+			>
+				<a class="hoja-inicio__enlace" href={`/voluntariado#${c.id}`}>
+					<span class="hoja-inicio__tab">{c.nombre}</span>
+					<span class="hoja-inicio__papel">
+						<span
+							class:list={[
+								'hoja-inicio__foto',
+								c.resumen.recorte ? 'hoja-inicio__foto--recorte' : 'hoja-inicio__foto--marco',
+							]}
+						>
+							<Image
+								src={c.resumen.portada}
+								alt={c.resumen.alt}
+								widths={[240, 480]}
+								sizes="(min-width: 56rem) 240px, 45vw"
+								loading="lazy"
+							/>
+						</span>
+						<span class="hoja-inicio__anios">{c.resumen.anios}</span>
+						<span class="hoja-inicio__rol">{c.resumen.rol}</span>
+						<span class="hoja-inicio__ver">
+							Revisar voluntariado
+							<span aria-hidden="true">→</span>
+						</span>
+					</span>
+				</a>
+			</li>
+		))
+	}
+</ul>
+
+<style>
+	.hojas-inicio {
+		--ink-papel: #2b2740;
+		--azul: #4133a6;
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 2.25rem 1rem;
+		padding: 0;
+		list-style: none;
+	}
+	@media (min-width: 56rem) {
+		.hojas-inicio {
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+			gap: 0;
+			padding-inline: 1rem;
+		}
+		/* Fanned: each card overlaps the previous one a little. */
+		.hoja-inicio + .hoja-inicio {
+			margin-left: -1.25rem;
+		}
+	}
+
+	/* In dark mode the paper sits in shadow (same mix as the Voluntariado page):
+	   ink ≥ 9.9:1, violet ≥ 5.4:1. */
+	.hoja-inicio {
+		--papel-hoja: light-dark(var(--papel), color-mix(in srgb, var(--papel) 85%, #2a2552));
+		--brillo-papel: light-dark(rgb(255 255 255 / 0.6), rgb(255 255 255 / 0.1));
+		position: relative;
+		z-index: var(--i);
+		transform: rotate(var(--giro));
+		transition:
+			transform 0.35s cubic-bezier(0.3, 0.7, 0.3, 1),
+			z-index 0s 0.1s;
+	}
+	@media (max-width: 55.99rem) {
+		.hoja-inicio {
+			transform: rotate(calc(var(--giro) / 2.5));
+		}
+	}
+	.hoja-inicio:hover,
+	.hoja-inicio:focus-within {
+		z-index: 10;
+		transform: translateY(-10px) rotate(0deg) scale(1.03);
+		transition-delay: 0s;
+	}
+
+	.hoja-inicio__enlace {
+		display: block;
+		color: var(--ink-papel);
+		text-decoration: none;
+		border-radius: 12px;
+	}
+	.hoja-inicio__enlace:focus-visible {
+		outline: 3px solid var(--violet-600);
+		outline-offset: 4px;
+	}
+
+	/* Paper tab on the top edge, same paper as the card. */
+	.hoja-inicio__tab {
+		position: relative;
+		z-index: 1;
+		display: inline-block;
+		margin-left: 12px;
+		margin-bottom: -2px;
+		padding: 0.5rem 0.9rem calc(0.5rem + 2px);
+		border-radius: 12px 12px 0 0;
+		background: var(--papel-hoja);
+		font-family: var(--font-display);
+		font-size: 0.85rem;
+		font-weight: 600;
+		line-height: 1.15;
+		box-shadow: 0 -2px 6px -2px rgb(20 14 70 / 0.16);
+	}
+
+	.hoja-inicio__papel {
+		position: relative;
+		display: grid;
+		justify-items: center;
+		aspect-ratio: 4 / 5;
+		padding: 1rem 1rem 1.1rem;
+		border-radius: 10px;
+		background:
+			radial-gradient(circle at 20% 10%, var(--brillo-papel), transparent 40%), var(--patron, none),
+			var(--papel-hoja);
+		box-shadow:
+			0 1px 2px rgb(20 14 70 / 0.12),
+			0 22px 40px -24px rgb(20 14 70 / 0.55);
+		container-type: inline-size;
+	}
+	.hoja-inicio--puntos .hoja-inicio__papel {
+		--patron: radial-gradient(circle at 1px 1px, rgb(43 39 64 / 0.07) 1px, transparent 1.4px) 0 0 /
+			8px 8px;
+	}
+	.hoja-inicio--cuadricula .hoja-inicio__papel {
+		--patron:
+			linear-gradient(rgb(103 84 224 / 0.14) 1px, transparent 1px) 0 0 / 100% 1.4rem,
+			linear-gradient(90deg, rgb(103 84 224 / 0.14) 1px, transparent 1px) 0 0 / 1.4rem 100%;
+	}
+	.hoja-inicio--rayas .hoja-inicio__papel {
+		--patron: linear-gradient(rgb(103 84 224 / 0.14) 1px, transparent 1px) 0 0 / 100% 1.2rem;
+	}
+
+	/* The picture fills the free space above the tape, kept whole (contain). */
+	.hoja-inicio__foto {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		min-height: 0;
+	}
+	.hoja-inicio__foto :global(img) {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+	}
+	.hoja-inicio__foto--recorte :global(img) {
+		filter: drop-shadow(0 6px 8px rgb(43 39 64 / 0.3));
+	}
+	/* A photo (not a cut-out) gets a white border: shown on a smaller box so the
+	   border hugs the picture. */
+	.hoja-inicio__foto--marco :global(img) {
+		inset: 4% 14%;
+		width: 72%;
+		height: 92%;
+		padding: 5px;
+		background: #fff;
+		object-fit: cover;
+		box-shadow: 0 8px 16px -8px rgb(43 39 64 / 0.4);
+		transform: rotate(-3deg);
+	}
+	.hoja-inicio__papel {
+		grid-template-rows: minmax(0, 1fr) auto auto auto;
+	}
+
+	/* Paper tape with typed years, overlapping the picture. */
+	.hoja-inicio__anios {
+		margin-top: -0.9rem;
+		padding: 0.3rem 0.8rem;
+		background: color-mix(in srgb, var(--tinta) 55%, #fff);
+		background-color: color-mix(in srgb, var(--tinta) 55%, #fff);
+		font-family: ui-monospace, 'Courier New', monospace;
+		font-size: max(11px, 6cqi);
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		white-space: nowrap;
+		transform: rotate(-2deg);
+		box-shadow: 0 2px 4px rgb(43 39 64 / 0.15);
+	}
+	.hoja-inicio__rol {
+		margin-top: 0.5rem;
+		font-family: var(--font-caveat), cursive;
+		font-size: max(16px, 9cqi);
+		font-weight: 700;
+		line-height: 1.05;
+		text-align: center;
+		color: var(--azul);
+	}
+	/* Visible call to action: the site's primary pill (white on #6754e0 = 5.36:1). */
+	.hoja-inicio__ver {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		margin-top: 0.6rem;
+		padding: 0.45rem 0.95rem;
+		border-radius: 999px;
+		background: var(--violet-600);
+		color: #fff;
+		font-family: var(--font-display);
+		font-size: 0.82rem;
+		font-weight: 600;
+		line-height: 1.2;
+		white-space: nowrap;
+		box-shadow: 0 6px 14px -8px rgb(65 51 166 / 0.7);
+		transition: background-color 0.15s ease;
+	}
+	.hoja-inicio__enlace:hover .hoja-inicio__ver,
+	.hoja-inicio__enlace:focus-visible .hoja-inicio__ver {
+		background: var(--brand-700);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.hoja-inicio {
+			transition: none;
+		}
+	}
+</style>

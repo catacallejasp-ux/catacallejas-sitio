@@ -1,0 +1,434 @@
+---
+/**
+ * «Voluntariado»: one scrapbook canvas per community, stacked like loose sheets of
+ * paper. Each sheet has a paper tab on its top edge (same paper, same tint); the tabs
+ * are an ARIA tablist and the sheets its tabpanels. Choosing a tab (or a link to
+ * /voluntariado#<id>, used by the home page) lifts that sheet to the front; the others stay behind, slightly offset,
+ * so their edges and tabs show.
+ *
+ * The tabs sit in the stack's own stacking context (the tablist creates none), so each
+ * tab shares its sheet's z-index and reads as part of it.
+ * Wide screens: each canvas is two 4:5 halves side by side. Phones: one above the other.
+ * Without JS the tabs are hidden and the canvases are listed one under the other.
+ */
+import Brillos from './Brillos.astro';
+import ScrapZona from './ScrapZona.astro';
+import { comunidades } from '../data/comunidades';
+
+const total = comunidades.length;
+---
+
+<div class="lienzos" data-lienzos style={`--total:${total}`}>
+	<Brillos variante="esquina" class="lienzos__brillos lienzos__brillos--1" />
+	<Brillos variante="esquina" class="lienzos__brillos lienzos__brillos--2" />
+
+	<div class="pila">
+		<div class="pestanas" role="tablist" aria-label="Comunidades">
+			{
+				comunidades.map((c, i) => (
+					<button
+						type="button"
+						role="tab"
+						class="pestana"
+						id={`tab-${c.id}`}
+						aria-controls={`lienzo-${c.id}`}
+						aria-selected={i === 0 ? 'true' : 'false'}
+						tabindex={i === 0 ? 0 : -1}
+						data-i={i}
+						style={`--i:${i};--papel:${c.papel};--tinta:${c.color}`}
+					>
+						<span class="pestana__punto" aria-hidden="true" />
+						{c.nombre}
+					</button>
+				))
+			}
+		</div>
+
+		<div class="pila__hojas">
+			{
+				comunidades.map((c, i) => (
+					<section
+						class:list={['lienzo', `lienzo--${c.fondo ?? 'puntos'}`]}
+						id={`lienzo-${c.id}`}
+						role="tabpanel"
+						aria-labelledby={`tab-${c.id}`}
+						data-i={i}
+						style={`--i:${i};--papel:${c.papel};--tinta:${c.color}`}
+					>
+						<h3 class="visually-hidden">{c.nombre}</h3>
+						<svg class="lienzo__pinza" viewBox="0 0 60 60" aria-hidden="true">
+							<path d="M18 26 22 4h16l4 22" fill="none" stroke="#8b8f9c" stroke-width="3" />
+							<rect x="6" y="24" width="48" height="30" rx="3" fill="#2b2740" />
+							<rect x="6" y="24" width="48" height="6" rx="2" fill="#4a4560" />
+						</svg>
+						<div class="lienzo__zonas">
+							<ScrapZona items={c.izq} color={c.color} />
+							<ScrapZona items={c.der} color={c.color} />
+						</div>
+					</section>
+				))
+			}
+		</div>
+	</div>
+</div>
+
+<script>
+	for (const root of document.querySelectorAll<HTMLElement>('[data-lienzos]')) {
+		const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+		const hojas = [...root.querySelectorAll<HTMLElement>('.lienzo')];
+		const pila = root.querySelector<HTMLElement>('.pila')!;
+		const motion = window.matchMedia('(prefers-reduced-motion: no-preference)');
+
+		// Videos: autoplay muted in a loop, but only while their sheet is in front and
+		// on screen, and never with reduced motion. Each has a pause button (moving
+		// content that lasts more than 5 s must be pausable); a pause by the visitor
+		// sticks until they press play again.
+		const videos = [...root.querySelectorAll<HTMLVideoElement>('.s-video > video')];
+		const pausadoPorVisita = new WeakSet<HTMLVideoElement>();
+		// With reduced motion nothing starts on its own, but play still works.
+		const iniciadoPorVisita = new WeakSet<HTMLVideoElement>();
+		const enPantalla = new WeakSet<HTMLVideoElement>();
+		const botonDe = (v: HTMLVideoElement) =>
+			v.parentElement!.querySelector<HTMLButtonElement>('.s-video__pausa')!;
+		const marcar = (v: HTMLVideoElement, enPausa: boolean) => {
+			const b = botonDe(v);
+			b.setAttribute('aria-pressed', String(enPausa));
+			b.title = enPausa ? 'Reproducir' : 'Pausar';
+			b.querySelector('.visually-hidden')!.textContent = enPausa
+				? 'Reproducir video'
+				: 'Pausar video';
+		};
+		function actualizarVideos() {
+			for (const v of videos) {
+				const delante = v.closest('.lienzo')?.classList.contains('is-front');
+				const debe =
+					delante &&
+					enPantalla.has(v) &&
+					!pausadoPorVisita.has(v) &&
+					(motion.matches || iniciadoPorVisita.has(v));
+				if (debe) v.play().catch(() => marcar(v, true));
+				else v.pause();
+				marcar(v, !debe);
+			}
+		}
+		for (const v of videos) {
+			v.muted = true;
+			v.controls = false;
+			const b = botonDe(v);
+			b.hidden = false;
+			b.addEventListener('click', () => {
+				if (v.paused) {
+					pausadoPorVisita.delete(v);
+					iniciadoPorVisita.add(v);
+				} else {
+					pausadoPorVisita.add(v);
+					iniciadoPorVisita.delete(v);
+				}
+				actualizarVideos();
+			});
+		}
+		const io = new IntersectionObserver(
+			(entradas) => {
+				for (const e of entradas) {
+					const v = e.target as HTMLVideoElement;
+					if (e.isIntersecting) enPantalla.add(v);
+					else enPantalla.delete(v);
+				}
+				actualizarVideos();
+			},
+			{ threshold: 0.25 },
+		);
+		videos.forEach((v) => io.observe(v));
+		motion.addEventListener('change', actualizarVideos);
+
+		// Stack order, front first.
+		let orden = hojas.map((_, i) => i);
+
+		const pintar = () => {
+			orden.forEach((i, d) => {
+				const z = String(hojas.length - d);
+				hojas[i].style.setProperty('--d', String(d));
+				hojas[i].style.zIndex = z;
+				tabs[i].style.setProperty('--d', String(d));
+				tabs[i].style.zIndex = z;
+			});
+			const activa = orden[0];
+			hojas.forEach((h, i) => {
+				h.inert = i !== activa;
+				h.classList.toggle('is-front', i === activa);
+			});
+			tabs.forEach((t, i) => {
+				t.setAttribute('aria-selected', String(i === activa));
+				t.tabIndex = i === activa ? 0 : -1;
+			});
+			actualizarVideos();
+		};
+
+		// Switching sheets: the chosen sheet comes to the front and fades in over the
+		// old one with a small settle; the old one eases back into the pile (CSS
+		// transition on --d). With reduced motion the switch is instant.
+		const elegir = (i: number) => {
+			if (orden[0] === i) return;
+			// The others keep their relative order.
+			orden = [i, ...orden.filter((x) => x !== i)];
+			pintar();
+			if (!motion.matches) return;
+			hojas[i].animate(
+				[
+					{ opacity: 0, transform: 'translateY(8px)' },
+					{ opacity: 1, transform: 'none' },
+				],
+				{ duration: 260, easing: 'cubic-bezier(.2,.7,.3,1)' },
+			);
+		};
+
+		tabs.forEach((t, i) => {
+			t.addEventListener('click', () => elegir(i));
+			t.addEventListener('keydown', (e) => {
+				const n = tabs.length;
+				let j: number | null = null;
+				if (e.key === 'ArrowRight') j = (i + 1) % n;
+				else if (e.key === 'ArrowLeft') j = (i - 1 + n) % n;
+				else if (e.key === 'Home') j = 0;
+				else if (e.key === 'End') j = n - 1;
+				if (j === null) return;
+				e.preventDefault();
+				elegir(j);
+				tabs[j].focus();
+			});
+		});
+		// Deep links from the home page: /voluntariado#9punto5 opens that sheet.
+		const desdeEnlace = () => {
+			const id = decodeURIComponent(location.hash.slice(1)).replace(/^lienzo-/, '');
+			const i = hojas.findIndex((h) => h.id === `lienzo-${id}`);
+			if (i < 0) return false;
+			orden = [i, ...orden.filter((x) => x !== i)];
+			return true;
+		};
+		desdeEnlace();
+		window.addEventListener('hashchange', () => {
+			const id = decodeURIComponent(location.hash.slice(1)).replace(/^lienzo-/, '');
+			const i = hojas.findIndex((h) => h.id === `lienzo-${id}`);
+			if (i >= 0) {
+				elegir(i);
+				pila.scrollIntoView({ behavior: motion.matches ? 'smooth' : 'auto', block: 'start' });
+			}
+		});
+
+		root.dataset.ready = '';
+		pintar();
+	}
+</script>
+
+<style>
+	.lienzos {
+		--tab-h: 2.75rem;
+		position: relative;
+		padding-block: 1rem;
+	}
+
+	/* Sparkles around the stack (decorative). */
+	.lienzos :global(.lienzos__brillos--1) {
+		top: -2.5rem;
+		right: -1.5rem;
+		width: 5.5rem;
+	}
+	.lienzos :global(.lienzos__brillos--2) {
+		bottom: -1rem;
+		left: -2.5rem;
+		width: 4.5rem;
+		transform: scaleX(-1) rotate(180deg);
+	}
+	@media (max-width: 55.99rem) {
+		.lienzos :global(.lienzos__brillos--1) {
+			top: -2rem;
+			right: -0.5rem;
+			width: 3.5rem;
+		}
+		.lienzos :global(.lienzos__brillos--2) {
+			display: none;
+		}
+	}
+
+	/* ---------- Stack ---------- */
+	.pila {
+		position: relative;
+		max-width: 64rem;
+		margin-inline: auto;
+		scroll-margin-top: 5.5rem;
+	}
+	.pestanas {
+		display: none;
+	}
+	.pila__hojas {
+		display: grid;
+		gap: 2rem;
+	}
+	[data-ready] .pila {
+		/* Room for the tabs and for the sheets peeking out behind. */
+		padding: var(--tab-h) calc((var(--total) - 1) * 0.6rem) calc((var(--total) - 1) * 0.6rem) 0;
+	}
+	[data-ready] .pila__hojas {
+		gap: 0;
+	}
+	[data-ready] .pila__hojas > .lienzo {
+		grid-area: 1 / 1;
+	}
+
+	/* ---------- Sheet ---------- */
+	/* In dark mode the paper sits in shadow: 85% paper + 15% deep violet. Ink stays
+	   ≥ 9.9:1 and the violet ≥ 5.4:1 (also over the grid lines). */
+	.lienzos {
+		--brillo-papel: light-dark(rgb(255 255 255 / 0.6), rgb(255 255 255 / 0.1));
+	}
+	.lienzo,
+	.pestana {
+		--papel-hoja: light-dark(var(--papel), color-mix(in srgb, var(--papel) 85%, #2a2552));
+	}
+	.lienzo {
+		--d: 0;
+		position: relative;
+		padding: clamp(1rem, 3vw, 2.25rem);
+		/* Every corner rounded: the tabs start inside the top edge, clear of the corner. */
+		border-radius: 10px;
+		background:
+			radial-gradient(circle at 20% 10%, var(--brillo-papel), transparent 40%), var(--patron, none),
+			var(--papel-hoja);
+		box-shadow:
+			0 1px 2px rgb(20 14 70 / 0.12),
+			0 24px 50px -28px rgb(20 14 70 / 0.5);
+		transform: translate(calc(var(--d) * 0.6rem), calc(var(--d) * 0.6rem));
+		transition:
+			transform 0.35s cubic-bezier(0.3, 0.7, 0.3, 1),
+			filter 0.35s ease;
+	}
+	/* Sheets behind are a touch darker, like paper in shadow. */
+	[data-ready] .lienzo:not(.is-front) {
+		filter: brightness(0.97);
+	}
+	/* Paper patterns */
+	.lienzo--puntos {
+		--patron: radial-gradient(circle at 1px 1px, rgb(43 39 64 / 0.07) 1px, transparent 1.4px) 0 0 /
+			8px 8px;
+	}
+	.lienzo--cuadricula {
+		--patron:
+			linear-gradient(rgb(103 84 224 / 0.14) 1px, transparent 1px) 0 0 / 100% 2.2rem,
+			linear-gradient(90deg, rgb(103 84 224 / 0.14) 1px, transparent 1px) 0 0 / 2.2rem 100%;
+	}
+	.lienzo--rayas {
+		--patron: linear-gradient(rgb(103 84 224 / 0.14) 1px, transparent 1px) 0 0 / 100% 1.6rem;
+	}
+	.lienzo__zonas {
+		display: grid;
+		gap: clamp(1rem, 3vw, 2.5rem);
+	}
+	@media (min-width: 56rem) {
+		/* Paper patterns */
+		.lienzo--puntos {
+			--patron: radial-gradient(circle at 1px 1px, rgb(43 39 64 / 0.07) 1px, transparent 1.4px) 0
+				0 / 8px 8px;
+		}
+		.lienzo--cuadricula {
+			--patron:
+				linear-gradient(rgb(103 84 224 / 0.14) 1px, transparent 1px) 0 0 / 100% 2.2rem,
+				linear-gradient(90deg, rgb(103 84 224 / 0.14) 1px, transparent 1px) 0 0 / 2.2rem 100%;
+		}
+		.lienzo--rayas {
+			--patron: linear-gradient(rgb(103 84 224 / 0.14) 1px, transparent 1px) 0 0 / 100% 1.6rem;
+		}
+		.lienzo__zonas {
+			grid-template-columns: 1fr 1fr;
+		}
+	}
+	/* Binder clip holding the sheet, on its top edge. */
+	.lienzo__pinza {
+		position: absolute;
+		z-index: 5;
+		top: -1.6rem;
+		right: 9%;
+		width: 3rem;
+		filter: drop-shadow(0 3px 3px rgb(20 14 70 / 0.35));
+	}
+
+	/* ---------- Tabs: paper flaps on the top edge ---------- */
+	[data-ready] .pestanas {
+		display: block;
+	}
+	.pestana {
+		--d: 0;
+		position: absolute;
+		top: 0;
+		left: calc(14px + var(--i) * (100% - 14px - (var(--total) - 1) * 0.6rem) / var(--total) * 0.78);
+		width: calc((100% - 14px - (var(--total) - 1) * 0.6rem) / var(--total) * 0.74);
+		max-width: 17rem;
+		/* Overlaps the sheet by 2px so tab and paper read as one piece. */
+		height: calc(var(--tab-h) + 2px);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		padding: 0 0.9rem 2px;
+		border: 0;
+		border-radius: 14px 14px 0 0;
+		background: var(--papel-hoja);
+		color: #2b2740;
+		font-family: var(--font-display);
+		font-size: 0.9rem;
+		font-weight: 500;
+		line-height: 1.15;
+		text-align: center;
+		cursor: pointer;
+		box-shadow: 0 -2px 6px -2px rgb(20 14 70 / 0.16);
+		/* Tabs stay in place (so they never overlap); only the sheets fan out. */
+		transform: none;
+		transition:
+			transform 0.45s cubic-bezier(0.3, 0.7, 0.3, 1),
+			filter 0.45s ease;
+	}
+	.pestana[aria-selected='false'] {
+		filter: brightness(0.94);
+	}
+	.pestana[aria-selected='false']:hover {
+		filter: brightness(0.98);
+	}
+	.pestana[aria-selected='true'] {
+		font-weight: 600;
+	}
+	.pestana__punto {
+		flex: none;
+		width: 0.65rem;
+		height: 0.65rem;
+		border-radius: 50%;
+		background: var(--tinta);
+		box-shadow: inset 0 0 0 1.5px rgb(43 39 64 / 0.25);
+	}
+	.pestana:focus-visible {
+		outline-offset: -4px;
+	}
+	@media (max-width: 55.99rem) {
+		.lienzos {
+			--tab-h: 3.75rem;
+		}
+		.pestana {
+			padding-inline: 0.3rem;
+			font-size: 0.74rem;
+			border-radius: 10px 10px 0 0;
+		}
+		.pestana__punto {
+			display: none;
+		}
+		.lienzo__pinza {
+			top: -1.2rem;
+			right: 3%;
+			width: 2.4rem;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.lienzo,
+		.pestana {
+			transition: none;
+		}
+	}
+</style>

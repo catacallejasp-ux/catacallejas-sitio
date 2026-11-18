@@ -1,0 +1,102 @@
+---
+/**
+ * Decorative sparkles (four-point twinkles, eight-point bursts and dots), drawn like
+ * the reference Cata chose for «Voluntariado». Purely decorative: hidden from screen
+ * readers and from pointer events. Place it inside a positioned parent and set its
+ * box with `class` or `style` (it fills that box).
+ * `variante`: 'esquina' (a diagonal trail, for corners) or 'linea' (a horizontal trail).
+ */
+interface Props {
+	variante?: 'esquina' | 'linea';
+	class?: string;
+	style?: string;
+}
+const { variante = 'esquina', class: className, style } = Astro.props;
+
+// Four-point twinkle of radius r at (x, y): concave sides.
+const destello = (x: number, y: number, r: number) => {
+	const k = r * 0.16;
+	return `M${x} ${y - r}C${x + k} ${y - k} ${x + k} ${y - k} ${x + r} ${y}C${x + k} ${y + k} ${x + k} ${y + k} ${x} ${y + r}C${x - k} ${y + k} ${x - k} ${y + k} ${x - r} ${y}C${x - k} ${y - k} ${x - k} ${y - k} ${x} ${y - r}Z`;
+};
+// Eight-point burst: long cross plus short diagonals.
+const estallido = (x: number, y: number, r: number) => {
+	const d = r * 0.42;
+	return `M${x} ${y - r}V${y + r}M${x - r} ${y}H${x + r}M${x - d} ${y - d}L${x + d} ${y + d}M${x - d} ${y + d}L${x + d} ${y - d}`;
+};
+
+const sets = {
+	esquina: {
+		viewBox: '0 0 120 160',
+		destellos: [
+			[78, 92, 11],
+			[30, 128, 6],
+			[96, 30, 5],
+		],
+		estallidos: [
+			[40, 40, 16],
+			[86, 140, 9],
+		],
+		puntos: [
+			[62, 18],
+			[18, 76],
+			[58, 62],
+			[104, 112],
+			[50, 104],
+			[14, 150],
+		],
+	},
+	linea: {
+		viewBox: '0 0 200 60',
+		destellos: [
+			[60, 34, 10],
+			[150, 22, 7],
+		],
+		estallidos: [
+			[18, 22, 12],
+			[110, 38, 14],
+			[186, 40, 8],
+		],
+		puntos: [
+			[40, 50],
+			[84, 12],
+			[132, 52],
+			[170, 8],
+		],
+	},
+} as const;
+const s = sets[variante];
+---
+
+<svg
+	class:list={['brillos', className]}
+	style={style}
+	viewBox={s.viewBox}
+	aria-hidden="true"
+	focusable="false"
+>
+	{s.estallidos.map(([x, y, r]) => <path class="brillos__linea" d={estallido(x, y, r)} />)}
+	{s.destellos.map(([x, y, r]) => <path class="brillos__destello" d={destello(x, y, r)} />)}
+	{s.puntos.map(([x, y]) => <circle cx={x} cy={y} r="1.6" />)}
+</svg>
+
+<style>
+	.brillos {
+		position: absolute;
+		overflow: visible;
+		pointer-events: none;
+		color: var(--violet-400);
+		fill: currentColor;
+	}
+	.brillos__linea {
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 1.4;
+		stroke-linecap: round;
+	}
+	.brillos__destello {
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 1.4;
+		stroke-linejoin: round;
+	}
+</style>
