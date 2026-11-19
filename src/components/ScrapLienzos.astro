@@ -62,8 +62,8 @@ const total = comunidades.length;
 							<rect x="6" y="24" width="48" height="6" rx="2" fill="#4a4560" />
 						</svg>
 						<div class="lienzo__zonas">
-							<ScrapZona items={c.izq} color={c.color} />
-							<ScrapZona items={c.der} color={c.color} />
+							<ScrapZona items={c.izq} color={c.color} altoMovil={c.altoMovil?.[0]} />
+							<ScrapZona items={c.der} color={c.color} altoMovil={c.altoMovil?.[1]} />
 						</div>
 					</section>
 				))
@@ -251,9 +251,11 @@ const total = comunidades.length;
 	}
 
 	/* ---------- Stack ---------- */
+	/* Narrow screens: the stack is capped so the collage (and its text, which scales
+	   with it) never grows huge on tablets. */
 	.pila {
 		position: relative;
-		max-width: 64rem;
+		max-width: min(64rem, 100%);
 		margin-inline: auto;
 		scroll-margin-top: 5.5rem;
 	}
@@ -301,6 +303,11 @@ const total = comunidades.length;
 		transition:
 			transform 0.35s cubic-bezier(0.3, 0.7, 0.3, 1),
 			filter 0.35s ease;
+	}
+	/* Sheets behind show only their paper: their collage would peek out at the edges. */
+	[data-ready] .lienzo:not(.is-front) .lienzo__zonas,
+	[data-ready] .lienzo:not(.is-front) .lienzo__pinza {
+		visibility: hidden;
 	}
 	/* Sheets behind are a touch darker, like paper in shadow. */
 	[data-ready] .lienzo:not(.is-front) {
@@ -409,6 +416,9 @@ const total = comunidades.length;
 	@media (max-width: 55.99rem) {
 		.lienzos {
 			--tab-h: 3.75rem;
+		}
+		.pila {
+			max-width: 32rem;
 		}
 		.pestana {
 			padding-inline: 0.3rem;

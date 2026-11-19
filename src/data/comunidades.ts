@@ -195,6 +195,8 @@ export interface Comunidad {
 	logo: ImageMetadata;
 	/** Background behind the logo in its round button. */
 	logoFondo?: string;
+	/** Phone height / width of [left, right] halves (default 1.6), for busy halves. */
+	altoMovil?: [number, number];
 	/** Summary card on the home page («Haciendo comunidad»). */
 	resumen: {
 		anios: string;
@@ -265,6 +267,7 @@ export const comunidades: Comunidad[] = [
 				y: 59,
 				w: 50,
 				rot: 2,
+				movil: { x: 44, y: 53, w: 54 },
 			},
 			{
 				tipo: 'flecha',
@@ -285,7 +288,7 @@ export const comunidades: Comunidad[] = [
 				y: 80,
 				w: 40,
 				rot: -3,
-				movil: { y: 87 },
+				movil: { x: 48, y: 88, w: 46 },
 			},
 		],
 		der: [
@@ -350,7 +353,7 @@ export const comunidades: Comunidad[] = [
 				y: 76,
 				w: 29,
 				rot: -3,
-				movil: { x: 54, y: 70, w: 42, rot: -3 },
+				movil: { x: 54, y: 75, w: 42 },
 			},
 		],
 	},
@@ -380,6 +383,7 @@ export const comunidades: Comunidad[] = [
 				y: 2,
 				w: 27,
 				rot: 3,
+				movil: { x: 76, y: 2, w: 22 },
 			},
 			{
 				tipo: 'foto',
@@ -402,7 +406,7 @@ export const comunidades: Comunidad[] = [
 				y: 38,
 				w: 17,
 				rot: -2,
-				movil: { x: 76, y: 45, w: 14 },
+				movil: { x: 78, y: 42, w: 14 },
 			},
 			{
 				tipo: 'nota',
@@ -412,7 +416,7 @@ export const comunidades: Comunidad[] = [
 				y: 51,
 				w: 29,
 				rot: 4,
-				movil: { x: 50, y: 58, w: 48 },
+				movil: { x: 36, y: 61, w: 62 },
 			},
 			{
 				tipo: 'flecha',
@@ -434,6 +438,7 @@ export const comunidades: Comunidad[] = [
 				y: 65,
 				w: 25,
 				rot: -3,
+				movil: { x: 4, y: 63, w: 25 },
 			},
 			{
 				tipo: 'recorte',
@@ -442,6 +447,7 @@ export const comunidades: Comunidad[] = [
 				x: 31,
 				y: 64,
 				w: 26,
+				movil: { x: 48, y: 72, w: 19 },
 			},
 			{
 				tipo: 'recorte',
@@ -452,7 +458,7 @@ export const comunidades: Comunidad[] = [
 				y: 64,
 				w: 38,
 				rot: 4,
-				movil: { y: 68 },
+				movil: { x: 68, y: 74, w: 29 },
 			},
 			{
 				tipo: 'nota',
@@ -462,7 +468,7 @@ export const comunidades: Comunidad[] = [
 				y: 97,
 				w: 34,
 				rot: -3,
-				movil: { x: 50, y: 97, w: 48 },
+				movil: { x: 2, y: 90, w: 50 },
 			},
 		],
 		der: [
@@ -476,6 +482,7 @@ export const comunidades: Comunidad[] = [
 				y: 1,
 				w: 32,
 				rot: 5,
+				movil: { x: 72, y: 1, w: 26 },
 			},
 			{
 				tipo: 'foto',
@@ -511,7 +518,16 @@ export const comunidades: Comunidad[] = [
 				w: 23,
 				rot: 5,
 			},
-			{ tipo: 'cifra', numero: '4', texto: 'mesas moderadas', x: 4, y: 68, w: 28, rot: -3 },
+			{
+				tipo: 'cifra',
+				numero: '4',
+				texto: 'mesas moderadas',
+				x: 4,
+				y: 68,
+				w: 28,
+				rot: -3,
+				movil: { w: 32 },
+			},
 			{ tipo: 'flecha', variante: 2, x: 6, y: 62, w: 26, rot: -10 },
 			{
 				tipo: 'recorte',
@@ -522,6 +538,7 @@ export const comunidades: Comunidad[] = [
 				y: 70,
 				w: 20,
 				rot: -3,
+				movil: { x: 37, y: 70, w: 17 },
 			},
 			{
 				tipo: 'recorte',
@@ -574,7 +591,7 @@ export const comunidades: Comunidad[] = [
 				y: 25,
 				w: 42,
 				rot: 3,
-				movil: { y: 22, w: 44 },
+				movil: { x: 50, y: 22, w: 48 },
 			},
 			{
 				tipo: 'foto',
@@ -586,18 +603,19 @@ export const comunidades: Comunidad[] = [
 				cinta: 'esquinas',
 				x: 4,
 				y: 28,
-				w: 52,
+				w: 49,
 				rot: -3,
+				movil: { w: 45 },
 			},
 			{
 				tipo: 'cifra',
 				numero: '20',
 				texto: 'mujeres en el 1er encuentro',
-				x: 60,
-				y: 51,
+				x: 62,
+				y: 46,
 				w: 34,
 				rot: 3,
-				movil: { x: 58, y: 57 },
+				movil: { x: 64, y: 49, w: 34 },
 			},
 			{
 				tipo: 'recorte',
@@ -605,10 +623,10 @@ export const comunidades: Comunidad[] = [
 				alt: 'Seis mujeres de +Mujeres en UX posan juntas y sonríen.',
 				contorno: true,
 				x: 4,
-				y: 64,
-				w: 62,
+				y: 63,
+				w: 58,
 				rot: 2,
-				movil: { y: 68 },
+				movil: { y: 63, w: 58 },
 			},
 			{
 				tipo: 'recorte',
@@ -618,7 +636,7 @@ export const comunidades: Comunidad[] = [
 				y: 75,
 				w: 18,
 				rot: 10,
-				movil: { x: 78, y: 76, w: 16 },
+				movil: { x: 78, y: 70, w: 16 },
 			},
 			{
 				tipo: 'enlace',
@@ -628,11 +646,19 @@ export const comunidades: Comunidad[] = [
 				y: 90,
 				w: 44,
 				rot: -3,
-				movil: { y: 93 },
+				movil: { x: 40, y: 85, w: 50 },
 			},
 		],
 		der: [
-			{ tipo: 'etiqueta', texto: '2024 · VALPARAÍSO Y VIÑA', x: 6, y: 3, w: 58, rot: -2 },
+			{
+				tipo: 'etiqueta',
+				texto: '2024 · VALPARAÍSO Y VIÑA',
+				x: 6,
+				y: 3,
+				w: 58,
+				rot: -2,
+				movil: { x: 2, y: 2 },
+			},
 			{
 				tipo: 'foto',
 				src: mmEncuentro2,
@@ -654,9 +680,10 @@ export const comunidades: Comunidad[] = [
 					'Una expositora conversa con las asistentes en un encuentro de +Mujeres en UX, noviembre de 2024.',
 				formato: 9 / 16,
 				x: 62,
-				y: 8,
+				y: 12,
 				w: 32,
 				rot: 3,
+				movil: { x: 62, y: 11 },
 			},
 			{
 				tipo: 'foto',
@@ -694,7 +721,16 @@ export const comunidades: Comunidad[] = [
 				w: 52,
 				rot: -3,
 			},
-			{ tipo: 'nota', papel: 'escrito', texto: 'No estamos solas ♡', x: 62, y: 94, w: 36, rot: -4 },
+			{
+				tipo: 'nota',
+				papel: 'escrito',
+				texto: 'No estamos solas ♡',
+				x: 62,
+				y: 94,
+				w: 36,
+				rot: -4,
+				movil: { x: 60, y: 86, w: 38 },
+			},
 		],
 	},
 	{
@@ -704,6 +740,7 @@ export const comunidades: Comunidad[] = [
 		papel: '#f8f4fc',
 		fondo: 'puntos',
 		logo: logoCirculo,
+		altoMovil: [1.9, 1.9],
 		logoFondo: '#3f3a44',
 		// Figures from Cata's own presentation about the Círculo de Mujeres.
 		resumen: {
@@ -714,7 +751,15 @@ export const comunidades: Comunidad[] = [
 		},
 		izq: [
 			{ tipo: 'titulo', texto: 'Círculo de Mujeres', x: 6, y: 3, w: 80, rot: -4 },
-			{ tipo: 'etiqueta', texto: 'BBK + 2BRAINS', x: 8, y: 25, w: 40, rot: -2 },
+			{
+				tipo: 'etiqueta',
+				texto: 'BBK + 2BRAINS',
+				x: 8,
+				y: 25,
+				w: 40,
+				rot: -2,
+				movil: { x: 4, y: 17 },
+			},
 			{
 				tipo: 'ficha',
 				texto: 'Coordinadora · 2022 – 2025',
@@ -722,6 +767,7 @@ export const comunidades: Comunidad[] = [
 				y: 23,
 				w: 40,
 				rot: 3,
+				movil: { x: 40, y: 24, w: 58 },
 			},
 			{
 				tipo: 'recorte',
@@ -731,6 +777,7 @@ export const comunidades: Comunidad[] = [
 				y: 32,
 				w: 50,
 				rot: -3,
+				movil: { x: 3, y: 37, w: 48 },
 			},
 			{
 				tipo: 'nota',
@@ -742,7 +789,7 @@ export const comunidades: Comunidad[] = [
 				y: 50,
 				w: 41,
 				rot: 2,
-				movil: { y: 44 },
+				movil: { x: 54, y: 38, w: 44 },
 			},
 			{
 				tipo: 'nota',
@@ -753,7 +800,7 @@ export const comunidades: Comunidad[] = [
 				y: 74,
 				w: 29,
 				rot: -5,
-				movil: { x: 2, y: 74, w: 33 },
+				movil: { x: 2, y: 64, w: 44 },
 			},
 			{
 				tipo: 'recorte',
@@ -763,13 +810,40 @@ export const comunidades: Comunidad[] = [
 				y: 76,
 				w: 60,
 				rot: -6,
-				movil: { x: 38, y: 79, w: 58 },
+				movil: { x: 30, y: 84, w: 46 },
 			},
 		],
 		der: [
-			{ tipo: 'cifra', numero: '10', texto: 'sesiones', x: 0, y: 2, w: 24, rot: -4 },
-			{ tipo: 'cifra', numero: '~30', texto: 'mujeres por sesión', x: 24, y: 4, w: 26, rot: 2 },
-			{ tipo: 'cifra', numero: '18', texto: 'temáticas', x: 50, y: 2, w: 24, rot: -3 },
+			{
+				tipo: 'cifra',
+				numero: '10',
+				texto: 'sesiones',
+				x: 0,
+				y: 2,
+				w: 24,
+				rot: -4,
+				movil: { x: 2, y: 1, w: 46 },
+			},
+			{
+				tipo: 'cifra',
+				numero: '~30',
+				texto: 'mujeres por sesión',
+				x: 24,
+				y: 4,
+				w: 26,
+				rot: 2,
+				movil: { x: 50, y: 1, w: 48 },
+			},
+			{
+				tipo: 'cifra',
+				numero: '18',
+				texto: 'temáticas',
+				x: 50,
+				y: 2,
+				w: 24,
+				rot: -3,
+				movil: { x: 2, y: 15, w: 46 },
+			},
 			{
 				tipo: 'cifra',
 				numero: '6,5',
@@ -778,8 +852,17 @@ export const comunidades: Comunidad[] = [
 				y: 4,
 				w: 26,
 				rot: 3,
+				movil: { x: 50, y: 15, w: 48 },
 			},
-			{ tipo: 'etiqueta', texto: '8/03/2023 → 8/03/2024', x: 20, y: 25, w: 60, rot: -1 },
+			{
+				tipo: 'etiqueta',
+				texto: '8/03/2023 → 8/03/2024',
+				x: 20,
+				y: 25,
+				w: 60,
+				rot: -1,
+				movil: { x: 4, y: 33 },
+			},
 			{
 				tipo: 'foto',
 				src: cmValoracion,
@@ -789,6 +872,7 @@ export const comunidades: Comunidad[] = [
 				y: 32,
 				w: 52,
 				rot: -2,
+				movil: { x: 3, y: 41, w: 52 },
 			},
 			{
 				tipo: 'nota',
@@ -800,6 +884,7 @@ export const comunidades: Comunidad[] = [
 				y: 31,
 				w: 39,
 				rot: 3,
+				movil: { x: 4, y: 60, w: 92 },
 			},
 			{
 				tipo: 'foto',
@@ -812,6 +897,7 @@ export const comunidades: Comunidad[] = [
 				y: 57,
 				w: 38,
 				rot: -4,
+				movil: { x: 58, y: 42, w: 38 },
 			},
 			{
 				tipo: 'foto',
@@ -822,6 +908,7 @@ export const comunidades: Comunidad[] = [
 				y: 74,
 				w: 44,
 				rot: 3,
+				movil: { x: 3, y: 82, w: 44 },
 			},
 			{
 				tipo: 'recorte',
@@ -831,6 +918,7 @@ export const comunidades: Comunidad[] = [
 				y: 76,
 				w: 24,
 				rot: 8,
+				movil: { x: 54, y: 86, w: 24 },
 			},
 		],
 	},
