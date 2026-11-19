@@ -1,0 +1,352 @@
+---
+/**
+ * «Escríbeme y conversemos»: a business-card dialog with Cata's e-mail and LinkedIn.
+ * Rendered once per page (BaseLayout). Any link to #contacto — every «Conversemos»
+ * button on the site — or any element with [data-conversemos] opens it.
+ * Without JS those links keep their default: they scroll to the footer, which has the
+ * same contact details.
+ * A modal <dialog>: focus moves inside and is trapped there, Escape and the close
+ * button close it, a click on the dimmed backdrop too, and focus returns to the button
+ * that opened it.
+ */
+import { Image } from 'astro:assets';
+import Brillos from './Brillos.astro';
+import retrato from '../assets/cata-foto-contacto.jpg';
+import { perfil } from '../data/cv';
+
+const linkedinCorto = perfil.linkedin.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
+---
+
+<dialog class="contacto" aria-labelledby="contacto-titulo" data-contacto>
+	<div class="contacto__tarjeta">
+		<button type="button" class="contacto__cerrar" data-cerrar-contacto>
+			<span class="visually-hidden">Cerrar</span>
+			<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg>
+		</button>
+
+		<div class="contacto__quien">
+			<span class="contacto__retrato">
+				<Image src={retrato} alt="" width={184} height={184} />
+			</span>
+			<div class="contacto__datos">
+				<p class="contacto__nombre">
+					{perfil.nombre.split(' ')[0]}
+					<br />
+					{perfil.nombre.split(' ').slice(1).join(' ')}
+				</p>
+				<p class="contacto__cargo">
+					{
+						perfil.presentacion.map((t, i) => (
+							<>
+								<span class="contacto__rol">
+									{t.split(' ').map((p, k) => (
+										<>
+											{k > 0 && ' '}
+											<span class="contacto__palabra">{p}</span>
+										</>
+									))}
+									{i < perfil.presentacion.length - 1 && (
+										<>
+											<span class="visually-hidden">,</span>
+											<span class="contacto__punto" aria-hidden="true">
+												{'\u00a0•'}
+											</span>
+										</>
+									)}
+								</span>{' '}
+							</>
+						))
+					}
+				</p>
+			</div>
+		</div>
+
+		<h2 id="contacto-titulo" class="contacto__titulo">
+			Escríbeme y <span class="gradient-text contacto__destacado"
+				>conversemos<Brillos variante="linea" class="contacto__brillos" /></span
+			>
+		</h2>
+
+		<ul class="contacto__lista">
+			<li>
+				<a class="contacto__canal" href={`mailto:${perfil.email}`}>
+					<span class="contacto__icono" aria-hidden="true">
+						<svg viewBox="0 0 24 24"
+							><path d="M3 6h18v12H3z"></path><path d="m3 7 9 7 9-7"></path></svg
+						>
+					</span>
+					<span class="contacto__texto">
+						<span class="contacto__etiqueta">Correo</span>
+						<span class="contacto__valor">{perfil.email}</span>
+					</span>
+				</a>
+			</li>
+			<li>
+				<a class="contacto__canal" href={perfil.linkedin} target="_blank" rel="me noopener">
+					<span class="contacto__icono contacto__icono--relleno" aria-hidden="true">
+						<svg viewBox="0 0 24 24"
+							><path d="M4 9h3v11H4zM5.5 4a1.8 1.8 0 1 1 0 3.6 1.8 1.8 0 0 1 0-3.6z"></path><path
+								d="M10 9h3v1.6c.6-1 1.8-1.9 3.6-1.9 2.9 0 3.4 1.9 3.4 4.4V20h-3v-6c0-1.4-.1-2.7-1.8-2.7s-2.2 1.3-2.2 2.6V20h-3z"
+							></path></svg
+						>
+					</span>
+					<span class="contacto__texto">
+						<span class="contacto__etiqueta">LinkedIn</span>
+						<span class="contacto__valor">{linkedinCorto}</span>
+					</span>
+					<span class="visually-hidden"> (se abre en otra pestaña)</span>
+				</a>
+			</li>
+		</ul>
+	</div>
+</dialog>
+
+<script>
+	const dialog = document.querySelector<HTMLDialogElement>('[data-contacto]');
+	if (dialog) {
+		let origen: HTMLElement | null = null;
+		const abrir = (desde: HTMLElement | null) => {
+			origen = desde;
+			dialog.showModal();
+		};
+		document.addEventListener('click', (e) => {
+			const el = (e.target as HTMLElement).closest<HTMLElement>(
+				'a[href="#contacto"], a[href="/#contacto"], [data-conversemos]',
+			);
+			if (!el) return;
+			e.preventDefault();
+			abrir(el);
+		});
+		dialog.querySelector('[data-cerrar-contacto]')!.addEventListener('click', () => dialog.close());
+		// A click on the dimmed backdrop lands on the dialog itself.
+		dialog.addEventListener('click', (e) => {
+			if (e.target === dialog) dialog.close();
+		});
+		dialog.addEventListener('close', () => origen?.focus());
+	}
+</script>
+
+<style>
+	.contacto {
+		margin: auto;
+		width: min(100% - 2rem, 30rem);
+		max-width: none;
+		max-height: calc(100dvh - 2rem);
+		padding: 0;
+		border: 0;
+		border-radius: var(--radius);
+		background: transparent;
+		color: var(--ink);
+		overflow: visible;
+	}
+	.contacto::backdrop {
+		background: rgb(10 8 28 / 0.6);
+		backdrop-filter: blur(3px);
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		.contacto[open] {
+			animation: contacto-entra 0.25s cubic-bezier(0.2, 0.7, 0.3, 1);
+		}
+		@keyframes contacto-entra {
+			from {
+				opacity: 0;
+				transform: translateY(12px) scale(0.98);
+			}
+		}
+	}
+
+	/* The card: raised surface, the site's soft glow and a violet edge on the left. */
+	.contacto__tarjeta {
+		position: relative;
+		padding: clamp(1.5rem, 5vw, 2.25rem);
+		border-radius: var(--radius);
+		background:
+			var(--glow), linear-gradient(90deg, var(--violet-600) 0 6px, transparent 6px), var(--surface);
+		box-shadow:
+			0 1px 2px rgb(20 14 70 / 0.12),
+			0 30px 70px -30px rgb(20 14 70 / 0.6);
+		overflow: hidden;
+	}
+	/* «conversemos» with a trail of sparkles, as in the home titles. */
+	.contacto__destacado {
+		position: relative;
+		display: inline-block;
+	}
+	.contacto__destacado :global(.contacto__brillos) {
+		left: calc(100% + 0.3rem);
+		top: -0.35em;
+		width: 2.6rem;
+	}
+
+	.contacto__cerrar {
+		position: absolute;
+		top: 0.75rem;
+		right: 0.75rem;
+		z-index: 1;
+		display: grid;
+		place-items: center;
+		width: 44px;
+		height: 44px;
+		border: 0;
+		border-radius: 50%;
+		background: transparent;
+		color: var(--ink);
+		cursor: pointer;
+	}
+	.contacto__cerrar:hover {
+		background: var(--violet-100);
+	}
+	.contacto__cerrar svg {
+		width: 22px;
+		height: 22px;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 2;
+		stroke-linecap: round;
+	}
+
+	/* Business-card header: photo on the left; name (two lines) and the presentation
+	   line on the right. Room on the right for the close button. */
+	.contacto__quien {
+		display: flex;
+		align-items: center;
+		gap: 1.1rem;
+		padding-right: 2.75rem;
+	}
+	.contacto__retrato {
+		flex: none;
+		width: 92px;
+		height: 92px;
+		border-radius: 50%;
+		overflow: hidden;
+		background: var(--violet-100);
+		box-shadow:
+			0 0 0 3px var(--surface),
+			0 0 0 5px var(--violet-300);
+	}
+	.contacto__retrato :global(img) {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	.contacto__datos {
+		display: grid;
+		gap: 0.45rem;
+		min-width: 0;
+	}
+	.contacto__nombre {
+		margin: 0;
+		font-family: var(--font-display);
+		font-weight: 700;
+		font-size: clamp(1.4rem, 1.15rem + 1.2vw, 1.7rem);
+		line-height: 1.05;
+		letter-spacing: -0.02em;
+	}
+	/* «Product Designer • Experimentando IA • …». Screen readers get a hidden comma
+	   instead of the dot; the dot is glued to the phrase before it, so a
+	   line never starts with one. */
+	.contacto__cargo {
+		margin: 0;
+		font-size: 0.86rem;
+		line-height: 1.45;
+		color: var(--ink-muted);
+	}
+	/* Phones: the header starts below the close button, so it gets the full width. */
+	@media (max-width: 35.99rem) {
+		.contacto__quien {
+			margin-top: 1.75rem;
+			padding-right: 0;
+			gap: 0.9rem;
+		}
+		.contacto__retrato {
+			width: 76px;
+			height: 76px;
+		}
+		.contacto__nombre {
+			font-size: 1.35rem;
+		}
+	}
+	/* Words never break inside (e.g. at the hyphen of «e-learning»). */
+	.contacto__palabra {
+		white-space: nowrap;
+	}
+	.contacto__punto {
+		color: var(--violet-accent);
+	}
+
+	/* One line, lighter than the name. */
+	.contacto__titulo {
+		margin-top: 1.5rem;
+		font-size: clamp(1.15rem, 0.95rem + 1vw, 1.45rem);
+		font-weight: 500;
+		letter-spacing: -0.02em;
+		white-space: nowrap;
+	}
+
+	.contacto__lista {
+		display: grid;
+		gap: 0.75rem;
+		margin-top: 1.5rem;
+		padding: 0;
+		list-style: none;
+	}
+	/* Each channel: a row with a round icon, a label and the address. */
+	.contacto__canal {
+		display: flex;
+		align-items: center;
+		gap: 0.9rem;
+		min-height: 64px;
+		padding: 0.6rem 1rem 0.6rem 0.6rem;
+		border-radius: var(--radius-sm);
+		background: var(--violet-50);
+		box-shadow: inset 0 0 0 1px var(--violet-200);
+		color: var(--ink);
+		text-decoration: none;
+		transition:
+			background-color 0.15s ease,
+			box-shadow 0.15s ease;
+	}
+	.contacto__canal:hover {
+		background: var(--violet-100);
+		box-shadow: inset 0 0 0 1.5px var(--violet-600);
+	}
+	.contacto__icono {
+		flex: none;
+		display: grid;
+		place-items: center;
+		width: 44px;
+		height: 44px;
+		border-radius: 50%;
+		background: var(--violet-600);
+		color: #fff;
+	}
+	.contacto__icono svg {
+		width: 22px;
+		height: 22px;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 1.8;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+	.contacto__icono--relleno svg {
+		fill: currentColor;
+		stroke: none;
+	}
+	.contacto__texto {
+		display: grid;
+		min-width: 0;
+	}
+	.contacto__etiqueta {
+		font-family: var(--font-display);
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--violet-ink);
+	}
+	/* Sized so the e-mail fits on one line on a phone; breaks only if it must. */
+	.contacto__valor {
+		font-size: min(1rem, 3.9vw);
+		font-weight: 500;
+		overflow-wrap: break-word;
+	}
+</style>

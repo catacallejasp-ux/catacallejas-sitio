@@ -17,7 +17,7 @@ interface Props {
 	linkLabel: string;
 	tone?: 'lilac' | 'sky';
 	shape?: 'folder' | 'box';
-	icon: 'book' | 'tool' | 'chat';
+	icon: 'book' | 'tool' | 'chat' | 'people';
 }
 const { title, text, href, linkLabel, tone = 'lilac', shape = 'folder', icon } = Astro.props;
 
@@ -26,6 +26,8 @@ const paths: Record<Props['icon'], string> = {
 	book: 'M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5zm0 14a2 2 0 0 1 2-2h13',
 	tool: 'M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4 2.5-2.5z',
 	chat: 'M4 5h16v10H9l-5 4V5z',
+	people:
+		'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20a6.5 6.5 0 0 1 13 0M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14a6.5 6.5 0 0 1 3.5 6',
 };
 ---
 

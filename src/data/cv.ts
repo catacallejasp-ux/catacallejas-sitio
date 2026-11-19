@@ -8,6 +8,8 @@ export const perfil = {
 	nombre: 'Catalina Callejas',
 	nombreCorto: 'Cata Callejas',
 	cargo: 'UX & Product Designer',
+	/** Presentation line of the contact card («Escríbeme y conversemos»). */
+	presentacion: ['AI Product Designer', 'Especialista en e-learning, research y contenidos'],
 	email: 'cata.callejasp@gmail.com',
 	linkedin: 'https://www.linkedin.com/in/catalina-callejas/',
 	// The phone is in the printed CV only; it is not published on the site.
@@ -16,12 +18,12 @@ export const perfil = {
 /** The CV served from public/cv/. Update `size` if the file changes. */
 export const cvPdf: { href: string; size?: string } | undefined = {
 	href: '/cv/CV-Catalina-Callejas-2026.pdf',
-	size: 'PDF, 103 KB',
+	size: 'PDF, 104 KB',
 };
 
 export const sobreMi = {
 	texto:
-		'IA Product Designer y profesora. Me apasiona el diseño de productos en todas sus aristas. Mi objetivo es mejorar las experiencias haciéndolas usables, accesibles y eficientes y, principalmente, contribuir a los objetivos de las organizaciones mejorando la calidad de vida de las personas.',
+		'AI Product Designer y profesora. Me apasiona el diseño de productos en todas sus aristas. Mi objetivo es mejorar las experiencias haciéndolas usables, accesibles y eficientes y, principalmente, contribuir a los objetivos de las organizaciones mejorando la calidad de vida de las personas.',
 	tags: [
 		'Product Designer',
 		'Experta en research y contenidos',

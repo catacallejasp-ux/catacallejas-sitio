@@ -13,7 +13,7 @@ interface Props {
 	highlight: string;
 	after?: string;
 	primaryCta: Cta;
-	secondaryCta: Cta;
+	secondaryCta?: Cta;
 	portrait: { src: ImageMetadata; alt: string };
 }
 const { before, highlight, after, primaryCta, secondaryCta, portrait } = Astro.props;
@@ -29,7 +29,13 @@ const { before, highlight, after, primaryCta, secondaryCta, portrait } = Astro.p
 			</h1>
 			<div class="hero__actions">
 				<Button href={primaryCta.href} icon>{primaryCta.label}</Button>
-				<Button href={secondaryCta.href} variant="ghost">{secondaryCta.label}</Button>
+				{
+					secondaryCta && (
+						<Button href={secondaryCta.href} variant="ghost">
+							{secondaryCta.label}
+						</Button>
+					)
+				}
 			</div>
 		</div>
 		<div class="hero__portrait">

@@ -1,26 +1,33 @@
 ---
 /**
- * Home «Mis voluntariados»: the four «Voluntariado» sheets as small paper cards fanned
- * out like a pile on a table — same papers, patterns and top tabs as on that page.
- * Each card links to its sheet: /voluntariado#<id> opens that tab.
- * Wide screens: one row, cards slightly rotated and overlapping; hovering or focusing a
- * card lifts it to the front. Tablets: a 2 × 2 grid; phones: one sideways card per row.
- * Paper and ink keep fixed colours in both themes (the paper is an object), as in the
- * Voluntariado page: ink #2b2740 ≥ 11.7:1 and violet #4133a6 ≥ 5.4:1 on every paper
- * (dark mode: paper in shadow, ink ≥ 9.9:1, violet ≥ 5.4:1).
+ * Home «Lo que estoy haciendo»: the two current volunteer projects as paper cards with
+ * a tab on top (same papers and patterns as the Voluntariado page), plus a small
+ * «Ver todo» link to that page. Each card links to its sheet: /voluntariado#<id>
+ * opens that tab.
+ * Layout: picture left; name and years right; the arrow bottom-right, in the same
+ * secondary style as the door folders above (ring, filled on hover).
+ * Wide screens: two cards side by side, slightly rotated; hovering or focusing a card
+ * lifts and straightens it. Narrow screens: one card per row.
+ * Paper and ink keep fixed colours in both themes (the paper is an object): ink
+ * #2b2740 ≥ 11.7:1 and violet #31248d ≥ 6.9:1 on every paper (dark mode: paper in
+ * shadow, ink ≥ 9.9:1).
  */
 import { Image } from 'astro:assets';
+import Button from './Button.astro';
 import { comunidades } from '../data/comunidades';
 
-const giros = [-4, 2.5, -2, 3.5];
+/** Shown on the home, in this order (the rest are on /voluntariado). */
+const DESTACADOS = ['9punto5', 'mas-voces-en-diseno'];
+const items = DESTACADOS.map((id) => comunidades.find((c) => c.id === id)!).filter(Boolean);
+const giros = [-1.5, 1.5];
 ---
 
 <ul class="hojas-inicio">
 	{
-		comunidades.map((c, i) => (
+		items.map((c, i) => (
 			<li
 				class:list={['hoja-inicio', `hoja-inicio--${c.fondo ?? 'puntos'}`]}
-				style={`--papel:${c.papel};--tinta:${c.color};--giro:${giros[i % giros.length]}deg;--i:${i}`}
+				style={`--papel:${c.papel};--tinta:${c.color};--giro:${giros[i % giros.length]}deg`}
 			>
 				<a class="hoja-inicio__enlace" href={`/voluntariado#${c.id}`}>
 					<span class="hoja-inicio__tab" aria-hidden="true" />
@@ -41,15 +48,13 @@ const giros = [-4, 2.5, -2, 3.5];
 						</span>
 						<span class="hoja-inicio__texto">
 							<h3 class="hoja-inicio__nombre">{c.nombre}</h3>
-							<span class="hoja-inicio__pie">
-								<span class="hoja-inicio__anios">{c.resumen.anios}</span>
-								<span class="hoja-inicio__ver">
-									<span class="visually-hidden">Revisar voluntariado</span>
-									<svg viewBox="0 0 24 24" aria-hidden="true">
-										<path d="M5 12h14M13 6l6 6-6 6" />
-									</svg>
-								</span>
-							</span>
+							<span class="hoja-inicio__anios">{c.resumen.anios}</span>
+						</span>
+						<span class="hoja-inicio__ver">
+							<span class="visually-hidden">Revisar voluntariado</span>
+							<svg viewBox="0 0 20 20" aria-hidden="true">
+								<path d="M4 10h12M11 5l5 5-5 5" />
+							</svg>
 						</span>
 					</span>
 				</a>
@@ -57,51 +62,49 @@ const giros = [-4, 2.5, -2, 3.5];
 		))
 	}
 </ul>
+<div class="hojas-inicio__todo">
+	<Button href="/voluntariado" variant="ghost" size="sm" icon>Ver todo</Button>
+</div>
 
 <style>
 	.hojas-inicio {
 		--ink-papel: #2b2740;
-		--azul: #4133a6;
+		--azul: #31248d;
 		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 2.25rem 1rem;
+		gap: 1.75rem;
 		padding: 0;
 		list-style: none;
 	}
 	@media (min-width: 56rem) {
 		.hojas-inicio {
-			grid-template-columns: repeat(4, minmax(0, 1fr));
-			gap: 0;
-			padding-inline: 1rem;
-		}
-		/* Fanned: each card overlaps the previous one a little. */
-		.hoja-inicio + .hoja-inicio {
-			margin-left: -1.25rem;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 2rem;
+			padding-inline: 0.5rem;
 		}
 	}
+	.hojas-inicio__todo {
+		display: flex;
+		justify-content: flex-end;
+		margin-top: 1.5rem;
+	}
 
-	/* In dark mode the paper sits in shadow (same mix as the Voluntariado page):
-	   ink ≥ 9.9:1, violet ≥ 5.4:1. */
+	/* In dark mode the paper sits in shadow (same mix as the Voluntariado page). */
 	.hoja-inicio {
 		--papel-hoja: light-dark(var(--papel), color-mix(in srgb, var(--papel) 85%, #2a2552));
 		--brillo-papel: light-dark(rgb(255 255 255 / 0.6), rgb(255 255 255 / 0.1));
 		position: relative;
-		z-index: var(--i);
 		transform: rotate(var(--giro));
-		transition:
-			transform 0.35s cubic-bezier(0.3, 0.7, 0.3, 1),
-			z-index 0s 0.1s;
+		transition: transform 0.35s cubic-bezier(0.3, 0.7, 0.3, 1);
 	}
 	@media (max-width: 55.99rem) {
 		.hoja-inicio {
-			transform: rotate(calc(var(--giro) / 2.5));
+			transform: rotate(calc(var(--giro) / 2));
 		}
 	}
 	.hoja-inicio:hover,
 	.hoja-inicio:focus-within {
-		z-index: 10;
-		transform: translateY(-10px) rotate(0deg) scale(1.03);
-		transition-delay: 0s;
+		z-index: 1;
+		transform: translateY(-6px) rotate(0deg);
 	}
 
 	.hoja-inicio__enlace {
@@ -115,13 +118,12 @@ const giros = [-4, 2.5, -2, 3.5];
 		outline-offset: 4px;
 	}
 
-	/* Paper tab on the top edge, same paper as the card. */
-	/* Blank paper flap on the top edge (the name is inside the card). */
+	/* Blank paper flap on the top edge. */
 	.hoja-inicio__tab {
 		position: relative;
 		z-index: 1;
 		display: block;
-		width: 38%;
+		width: 32%;
 		height: 1.5rem;
 		margin-left: 12px;
 		margin-bottom: -2px;
@@ -130,30 +132,15 @@ const giros = [-4, 2.5, -2, 3.5];
 		box-shadow: 0 -2px 6px -2px rgb(20 14 70 / 0.16);
 	}
 
-	/* Name above the years. */
-	.hoja-inicio__texto {
-		display: grid;
-		justify-items: center;
-		gap: 0.5rem;
-		margin-top: 0.75rem;
-		text-align: center;
-	}
-	.hoja-inicio__nombre {
-		margin: 0;
-		font-family: var(--font-display);
-		font-size: 1.05rem;
-		font-weight: 600;
-		line-height: 1.2;
-		letter-spacing: -0.01em;
-		color: var(--ink-papel);
-	}
-
+	/* Picture left, name and years right; the arrow is placed bottom-right. */
 	.hoja-inicio__papel {
 		position: relative;
 		display: grid;
-		justify-items: center;
-		aspect-ratio: 4 / 5;
-		padding: 1rem 1rem 1.1rem;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		align-items: center;
+		column-gap: 1rem;
+		min-height: 13rem;
+		padding: 1.25rem 1.25rem 1.25rem 1rem;
 		border-radius: 10px;
 		background:
 			radial-gradient(circle at 20% 10%, var(--brillo-papel), transparent 40%), var(--patron, none),
@@ -161,7 +148,6 @@ const giros = [-4, 2.5, -2, 3.5];
 		box-shadow:
 			0 1px 2px rgb(20 14 70 / 0.12),
 			0 22px 40px -24px rgb(20 14 70 / 0.55);
-		container-type: inline-size;
 	}
 	.hoja-inicio--puntos .hoja-inicio__papel {
 		--patron: radial-gradient(circle at 1px 1px, rgb(43 39 64 / 0.07) 1px, transparent 1.4px) 0 0 /
@@ -176,12 +162,10 @@ const giros = [-4, 2.5, -2, 3.5];
 		--patron: linear-gradient(rgb(103 84 224 / 0.14) 1px, transparent 1px) 0 0 / 100% 1.2rem;
 	}
 
-	/* The picture fills the free space above the tape, kept whole (contain). */
+	/* The picture fills its column, kept whole (contain). */
 	.hoja-inicio__foto {
 		position: relative;
-		width: 100%;
-		height: 100%;
-		min-height: 0;
+		height: 10.5rem;
 	}
 	.hoja-inicio__foto :global(img) {
 		position: absolute;
@@ -193,112 +177,95 @@ const giros = [-4, 2.5, -2, 3.5];
 	.hoja-inicio__foto--recorte :global(img) {
 		filter: drop-shadow(0 6px 8px rgb(43 39 64 / 0.3));
 	}
-	/* A photo (not a cut-out) gets a white border: shown on a smaller box so the
-	   border hugs the picture. */
+	/* A photo (not a cut-out) gets a white border and a slight tilt. */
 	.hoja-inicio__foto--marco :global(img) {
-		inset: 4% 14%;
-		width: 72%;
-		height: 92%;
+		inset: 3% 12%;
+		width: 76%;
+		height: 94%;
 		padding: 5px;
 		background: #fff;
 		object-fit: cover;
 		box-shadow: 0 8px 16px -8px rgb(43 39 64 / 0.4);
 		transform: rotate(-3deg);
 	}
-	.hoja-inicio__papel {
-		grid-template-rows: minmax(0, 1fr) auto;
-	}
 
-	/* Paper tape with typed years, overlapping the picture. */
+	.hoja-inicio__texto {
+		display: grid;
+		justify-items: start;
+		gap: 0.6rem;
+		/* Room for the arrow below. */
+		padding-bottom: 2.75rem;
+	}
+	.hoja-inicio__nombre {
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: 1.15rem;
+		font-weight: 600;
+		line-height: 1.2;
+		letter-spacing: -0.01em;
+		color: var(--ink-papel);
+	}
+	/* Paper tape with typed years. */
 	.hoja-inicio__anios {
-		margin-top: -0.9rem;
 		padding: 0.3rem 0.8rem;
-		background: color-mix(in srgb, var(--tinta) 55%, #fff);
 		background-color: color-mix(in srgb, var(--tinta) 55%, #fff);
-		font-family: ui-monospace, 'Courier New', monospace;
-		font-size: max(11px, 6cqi);
-		font-weight: 700;
-		letter-spacing: 0.12em;
+		font-family: var(--font-notas), 'Courier New', monospace;
+		font-size: 0.85rem;
+		font-weight: 400;
+		letter-spacing: 0.1em;
 		white-space: nowrap;
+		color: var(--ink-papel);
 		transform: rotate(-2deg);
 		box-shadow: 0 2px 4px rgb(43 39 64 / 0.15);
 	}
-	/* Call to action: an arrow in the site's primary violet circle (white on #6754e0
-	   = 5.36:1), next to the years; its name is visually hidden text. */
-	/* Years tape and arrow side by side under the picture (clear of the next card,
-	   which overlaps this one's right edge in the fanned row). */
-	.hoja-inicio__pie {
-		display: flex;
-		align-items: center;
-		gap: 0.6rem;
-	}
-	.hoja-inicio__pie .hoja-inicio__anios {
-		margin-top: 0;
-	}
+
+	/* Secondary arrow, like the door folders: violet ring, filled on hover/focus.
+	   #31248d ring/arrow on the papers ≥ 6.9:1; white on #6754e0 = 5.36:1. */
 	.hoja-inicio__ver {
-		flex: none;
+		position: absolute;
+		right: 1rem;
+		bottom: 1rem;
 		display: grid;
 		place-items: center;
 		width: 44px;
 		height: 44px;
 		border-radius: 50%;
-		background: var(--violet-600);
-		color: #fff;
-		box-shadow: 0 6px 14px -6px rgb(65 51 166 / 0.7);
+		color: var(--azul);
+		box-shadow: inset 0 0 0 1.5px currentColor;
 		transition:
-			background-color 0.15s ease,
-			transform 0.15s ease;
+			background-color 0.2s ease,
+			color 0.2s ease;
 	}
 	.hoja-inicio__ver svg {
-		width: 22px;
-		height: 22px;
+		width: 18px;
+		height: 18px;
 		fill: none;
 		stroke: currentColor;
-		stroke-width: 2.2;
+		stroke-width: 1.8;
 		stroke-linecap: round;
 		stroke-linejoin: round;
 	}
 	.hoja-inicio__enlace:hover .hoja-inicio__ver,
 	.hoja-inicio__enlace:focus-visible .hoja-inicio__ver {
-		background: var(--brand-700);
-		transform: translateX(3px);
+		background: var(--violet-600);
+		color: #fff;
 	}
 
-	/* Phones: one card per row, laid out sideways (picture left; name, years and arrow
-	   right), so everything has room and the stack stays short. */
-	@media (max-width: 35.99rem) {
-		.hojas-inicio {
-			grid-template-columns: 1fr;
-			gap: 1.75rem;
-		}
+	@media (max-width: 30rem) {
 		.hoja-inicio__papel {
-			aspect-ratio: auto;
-			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-			grid-template-rows: auto;
-			align-items: center;
-			justify-items: start;
-			column-gap: 0.9rem;
-			min-height: 10rem;
-			padding: 1rem;
+			min-height: 11rem;
 		}
 		.hoja-inicio__foto {
 			height: 8.5rem;
 		}
-		.hoja-inicio__texto {
-			justify-items: start;
-			margin-top: 0;
-			text-align: left;
-		}
-		.hoja-inicio__pie {
-			flex-wrap: wrap;
-		}
-		.hoja-inicio__anios {
-			font-size: 0.85rem;
+		.hoja-inicio__nombre {
+			font-size: 1.05rem;
 		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.hoja-inicio {
+		.hoja-inicio,
+		.hoja-inicio__ver {
 			transition: none;
 		}
 	}

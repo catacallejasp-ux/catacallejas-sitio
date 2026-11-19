@@ -8,6 +8,7 @@ import WorkCard from '../../components/WorkCard.astro';
 import SkillsBento from '../../components/SkillsBento.astro';
 import WorkflowDiagram from '../../components/WorkflowDiagram.astro';
 import DownloadCv from '../../components/DownloadCv.astro';
+import Button from '../../components/Button.astro';
 import Tag from '../../components/Tag.astro';
 import retrato from '../../assets/cata-ilustracion.png';
 import {
@@ -95,6 +96,8 @@ const contacto = [
 				</ul>
 				<div class="intro__actions">
 					<DownloadCv />
+					<!-- #contacto opens the «Escríbeme y conversemos» card (ContactoModal). -->
+					<Button href="#contacto" variant="ghost">Conversemos</Button>
 				</div>
 			</div>
 			<div class="intro__photo">
@@ -556,9 +559,11 @@ const contacto = [
 	.intro__tags {
 		margin-top: 1.25rem;
 	}
+	/* «Descargar CV» with «Conversemos» below it. */
 	.intro__actions {
 		display: flex;
-		flex-wrap: wrap;
+		flex-direction: column;
+		align-items: flex-start;
 		gap: 0.75rem;
 		margin-top: 1.75rem;
 	}

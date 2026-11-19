@@ -4,6 +4,7 @@ import '../styles/global.css';
 import SiteHeader from '../components/SiteHeader.astro';
 import type { Section } from '../lib/nav';
 import SiteFooter from '../components/SiteFooter.astro';
+import ContactoModal from '../components/ContactoModal.astro';
 
 interface Props {
 	title: string;
@@ -89,8 +90,8 @@ const analytics = import.meta.env.PROD;
 		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 		<Font cssVariable="--font-poppins" preload />
 		<Font cssVariable="--font-jakarta" preload />
-		<Font cssVariable="--font-caveat" />
-		<Font cssVariable="--font-script" />
+		<Font cssVariable="--font-hand" />
+		<Font cssVariable="--font-notas" />
 		{jsonLd && <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
 	</head>
 	<body>
@@ -100,6 +101,7 @@ const analytics = import.meta.env.PROD;
 			<slot />
 		</main>
 		<SiteFooter />
+		<ContactoModal />
 	</body>
 </html>
 

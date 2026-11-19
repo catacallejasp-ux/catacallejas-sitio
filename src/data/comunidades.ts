@@ -48,6 +48,7 @@ import mmEquipo2025 from '../assets/palabras/mm-equipo-2025.jpg';
 import mvLogo from '../assets/voluntariado/mas-voces/logo.png';
 import mvAfiche from '../assets/voluntariado/mas-voces/afiche-29-10.jpg';
 import mvPosterCasa from '../assets/voluntariado/mas-voces/poster-voces-nuestra-casa.jpg';
+import mvPosterCasaMovil from '../assets/voluntariado/mas-voces/poster-voces-nuestra-casa-movil.jpg';
 
 interface Lugar {
 	x: number;
@@ -85,6 +86,8 @@ export interface Video extends Lugar {
 	formato?: number;
 	/** Larger version for the «Ver en grande» dialog (loaded only when opened). */
 	grande?: string;
+	/** Phone version (e.g. a vertical recording), used on narrow screens instead. */
+	movilVideo?: { src: string; poster: ImageMetadata; formato: number };
 }
 /** Handwritten note on a piece of paper. */
 export interface Nota extends Lugar {
@@ -237,6 +240,7 @@ export const comunidades: Comunidad[] = [
 				y: 8,
 				w: 46,
 				rot: 3,
+				movil: { x: 44, w: 54 },
 			},
 			{ tipo: 'titulo', texto: '+Voces conversando', x: 6, y: 37, w: 74, rot: -3 },
 			{
@@ -300,6 +304,11 @@ export const comunidades: Comunidad[] = [
 				tipo: 'video',
 				src: `${VIDEOS}/voces-nuestra-casa.mp4`,
 				grande: `${VIDEOS}/voces-nuestra-casa-grande.mp4`,
+				movilVideo: {
+					src: `${VIDEOS}/voces-nuestra-casa-movil.mp4`,
+					poster: mvPosterCasaMovil,
+					formato: 9 / 16,
+				},
 				poster: mvPosterCasa,
 				titulo:
 					'Recorrido por Nuestra casa: una casa ilustrada con calendario, pizarra de coordinación semanal, ideas en post-its y más.',
@@ -308,36 +317,40 @@ export const comunidades: Comunidad[] = [
 				y: 26,
 				w: 96,
 				rot: 1.5,
+				movil: { x: 3, y: 29, w: 46, rot: 1.5 },
 			},
 			{
 				tipo: 'nota',
 				papel: 'postit',
-				tam: 4.8,
+				tam: 4.2,
 				texto: 'Calendario conectado a Google',
 				x: 3,
 				y: 76,
-				w: 28,
+				w: 29,
 				rot: -5,
+				movil: { x: 54, y: 30, w: 43, rot: -4 },
 			},
 			{
 				tipo: 'nota',
 				papel: 'postit',
-				tam: 4.8,
+				tam: 4.2,
 				texto: 'Pizarra de coordinación semanal',
 				x: 36,
 				y: 76,
-				w: 28,
+				w: 29,
 				rot: 3,
+				movil: { x: 55, y: 50, w: 43, rot: 3 },
 			},
 			{
 				tipo: 'nota',
 				papel: 'postit',
-				tam: 4.8,
+				tam: 4.2,
 				texto: 'Ideas en post-its',
 				x: 69,
 				y: 76,
-				w: 28,
+				w: 29,
 				rot: -3,
+				movil: { x: 54, y: 70, w: 42, rot: -3 },
 			},
 		],
 	},
@@ -389,6 +402,7 @@ export const comunidades: Comunidad[] = [
 				y: 38,
 				w: 17,
 				rot: -2,
+				movil: { x: 76, y: 45, w: 14 },
 			},
 			{
 				tipo: 'nota',
@@ -398,8 +412,18 @@ export const comunidades: Comunidad[] = [
 				y: 51,
 				w: 29,
 				rot: 4,
+				movil: { x: 50, y: 58, w: 48 },
 			},
-			{ tipo: 'flecha', variante: 1, voltear: true, x: 50, y: 58, w: 18, rot: 20 },
+			{
+				tipo: 'flecha',
+				variante: 1,
+				voltear: true,
+				x: 50,
+				y: 58,
+				w: 18,
+				rot: 20,
+				movil: { x: 34, y: 61, w: 14 },
+			},
 			{
 				tipo: 'video',
 				src: `${VIDEOS}/9punto5-facilitando.mp4`,
@@ -428,8 +452,18 @@ export const comunidades: Comunidad[] = [
 				y: 64,
 				w: 38,
 				rot: 4,
+				movil: { y: 68 },
 			},
-			{ tipo: 'nota', papel: 'escrito', texto: '¡Reencuentros!', x: 62, y: 97, w: 34, rot: -3 },
+			{
+				tipo: 'nota',
+				papel: 'escrito',
+				texto: '¡Reencuentros!',
+				x: 62,
+				y: 97,
+				w: 34,
+				rot: -3,
+				movil: { x: 50, y: 97, w: 48 },
+			},
 		],
 		der: [
 			{ tipo: 'titulo', texto: '10 años', x: 8, y: 3, w: 50, rot: -4 },
@@ -493,10 +527,10 @@ export const comunidades: Comunidad[] = [
 				tipo: 'recorte',
 				src: n26Credencial,
 				alt: 'Credencial de 9punto5 diez años, 12 al 14 de noviembre de 2026, Valdivia.',
-				x: 52,
-				y: 79,
-				w: 34,
-				rot: -8,
+				x: 54,
+				y: 72,
+				w: 20,
+				rot: -4,
 			},
 			{
 				tipo: 'recorte',
@@ -656,8 +690,8 @@ export const comunidades: Comunidad[] = [
 				fecha: 'EQUIPO 2025',
 				formato: 1400 / 534,
 				x: 4,
-				y: 79,
-				w: 56,
+				y: 82,
+				w: 52,
 				rot: -3,
 			},
 			{ tipo: 'nota', papel: 'escrito', texto: 'No estamos solas ♡', x: 62, y: 94, w: 36, rot: -4 },
@@ -708,6 +742,7 @@ export const comunidades: Comunidad[] = [
 				y: 50,
 				w: 41,
 				rot: 2,
+				movil: { y: 44 },
 			},
 			{
 				tipo: 'nota',
@@ -718,6 +753,7 @@ export const comunidades: Comunidad[] = [
 				y: 74,
 				w: 29,
 				rot: -5,
+				movil: { x: 2, y: 74, w: 33 },
 			},
 			{
 				tipo: 'recorte',
@@ -727,6 +763,7 @@ export const comunidades: Comunidad[] = [
 				y: 76,
 				w: 60,
 				rot: -6,
+				movil: { x: 38, y: 79, w: 58 },
 			},
 		],
 		der: [
@@ -736,7 +773,7 @@ export const comunidades: Comunidad[] = [
 			{
 				tipo: 'cifra',
 				numero: '6,5',
-				texto: 'evaluación final (1 a 7)',
+				texto: 'evaluación final (1 a 7)',
 				x: 74,
 				y: 4,
 				w: 26,

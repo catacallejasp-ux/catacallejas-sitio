@@ -59,24 +59,26 @@ export default defineConfig({
 			fallbacks: ['system-ui', 'sans-serif'],
 		},
 		{
-			// Handwriting for the «Comunidades» scrapbook only (not preloaded).
+			// Handwritten titles and figures of the «Voluntariado» collages (not
+			// preloaded). Handlee has a single weight; bold is not synthesised.
 			provider: fontProviders.google(),
-			name: 'Caveat',
-			cssVariable: '--font-caveat',
-			weights: [500, 700],
+			name: 'Handlee',
+			cssVariable: '--font-hand',
+			weights: [400],
 			styles: ['normal'],
 			subsets: ['latin', 'latin-ext'],
 			fallbacks: ['cursive'],
 		},
 		{
-			// Script titles of the «Comunidades» scrapbook (not preloaded).
+			// Typewriter text of the «Voluntariado» collages: notes, captions, tickets,
+			// tapes and dates (not preloaded).
 			provider: fontProviders.google(),
-			name: 'Dancing Script',
-			cssVariable: '--font-script',
-			weights: [600, 700],
+			name: 'Courier Prime',
+			cssVariable: '--font-notas',
+			weights: [400, 700],
 			styles: ['normal'],
 			subsets: ['latin', 'latin-ext'],
-			fallbacks: ['cursive'],
+			fallbacks: ['Courier New', 'monospace'],
 		},
 	],
 });
