@@ -1,0 +1,265 @@
+---
+/**
+ * Comments under an article: the approved ones, then a form (name + comment, no
+ * account). New comments go to Supabase as pending and show up once Cata approves
+ * them there (see src/data/comentarios.ts and supabase/comentarios.sql).
+ * The list loads in the browser, since approvals happen after the site is built.
+ */
+import { comentarios } from '../data/comentarios';
+
+interface Props {
+	/** Article id (its slug), used to group the comments. */
+	articulo: string;
+}
+const { articulo } = Astro.props;
+---
+
+<section
+	class="comentarios"
+	aria-labelledby="comentarios-titulo"
+	data-comentarios
+	data-articulo={articulo}
+	data-url={comentarios.url}
+	data-clave={comentarios.clave}
+>
+	<h2 id="comentarios-titulo" class="comentarios__titulo">
+		<span class="gradient-text">Comentarios</span>
+	</h2>
+
+	<p class="comentarios__estado" data-estado>Cargando comentarios…</p>
+	<ol class="comentarios__lista" data-lista hidden></ol>
+
+	<form class="form" data-form novalidate>
+		<h3 class="form__titulo">Deja un comentario</h3>
+		<p class="form__nota">Lo leo antes de publicarlo, así que puede tardar un poco en aparecer.</p>
+
+		<div class="form__campo">
+			<label for="comentario-nombre">Tu nombre</label>
+			<input
+				id="comentario-nombre"
+				name="nombre"
+				type="text"
+				autocomplete="name"
+				maxlength="80"
+				required
+			/>
+		</div>
+		<div class="form__campo">
+			<label for="comentario-texto">Comentario</label>
+			<textarea id="comentario-texto" name="texto" rows="5" maxlength="3000" required></textarea>
+		</div>
+		<!-- Trap for spam bots: hidden from people and screen readers. -->
+		<div class="form__trampa" aria-hidden="true">
+			<label for="comentario-web">No completar</label>
+			<input id="comentario-web" name="web" type="text" tabindex="-1" autocomplete="off" />
+		</div>
+
+		<button class="button button--primary" type="submit" data-enviar>Enviar comentario</button>
+		<p class="form__mensaje" data-mensaje role="status" aria-live="polite"></p>
+	</form>
+</section>
+
+<script>
+	const fecha = new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'long', year: 'numeric' });
+
+	type Comentario = { id: number; nombre: string; texto: string; creado: string };
+
+	for (const raiz of document.querySelectorAll<HTMLElement>('[data-comentarios]')) {
+		const { articulo = '', url = '', clave = '' } = raiz.dataset;
+		const api = `${url.replace(/\/$/, '')}/rest/v1/comentarios`;
+		const headers = { apikey: clave, 'Content-Type': 'application/json' };
+
+		const estado = raiz.querySelector<HTMLElement>('[data-estado]')!;
+		const lista = raiz.querySelector<HTMLOListElement>('[data-lista]')!;
+		const form = raiz.querySelector<HTMLFormElement>('[data-form]')!;
+		const mensaje = raiz.querySelector<HTMLElement>('[data-mensaje]')!;
+		const enviar = raiz.querySelector<HTMLButtonElement>('[data-enviar]')!;
+		const cargado = Date.now();
+
+		const pintar = (items: Comentario[]) => {
+			lista.replaceChildren(
+				...items.map((c) => {
+					const li = document.createElement('li');
+					li.className = 'comentario';
+					const cabeza = document.createElement('p');
+					cabeza.className = 'comentario__cabeza';
+					const nombre = document.createElement('strong');
+					nombre.textContent = c.nombre;
+					const cuando = document.createElement('time');
+					cuando.dateTime = c.creado;
+					cuando.textContent = fecha.format(new Date(c.creado));
+					cabeza.append(nombre, cuando);
+					const texto = document.createElement('p');
+					texto.className = 'comentario__texto';
+					texto.textContent = c.texto;
+					li.append(cabeza, texto);
+					return li;
+				}),
+			);
+			lista.hidden = items.length === 0;
+			estado.textContent =
+				items.length === 0 ? 'Aún no hay comentarios. Puedes dejar el primero.' : '';
+			estado.hidden = items.length > 0;
+		};
+
+		fetch(
+			`${api}?select=id,nombre,texto,creado&articulo=eq.${encodeURIComponent(articulo)}&order=creado.asc`,
+			{ headers },
+		)
+			.then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+			.then(pintar)
+			.catch(() => {
+				estado.textContent = 'No pude cargar los comentarios. Intenta recargar la página.';
+			});
+
+		form.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const datos = new FormData(form);
+			const nombre = String(datos.get('nombre') ?? '').trim();
+			const texto = String(datos.get('texto') ?? '').trim();
+
+			// Bots fill the hidden field or submit instantly: pretend it worked.
+			if (datos.get('web') || Date.now() - cargado < 3000) {
+				form.reset();
+				mensaje.textContent = '¡Gracias! Tu comentario aparecerá cuando lo revise.';
+				return;
+			}
+			if (!nombre || !texto) {
+				mensaje.textContent = 'Escribe tu nombre y tu comentario antes de enviarlo.';
+				(nombre ? form.texto : form.nombre).focus();
+				return;
+			}
+
+			enviar.disabled = true;
+			mensaje.textContent = 'Enviando…';
+			try {
+				const r = await fetch(api, {
+					method: 'POST',
+					headers: { ...headers, Prefer: 'return=minimal' },
+					body: JSON.stringify({ articulo, nombre, texto }),
+				});
+				if (!r.ok) throw new Error(String(r.status));
+				form.reset();
+				mensaje.textContent = '¡Gracias! Tu comentario aparecerá cuando lo revise.';
+			} catch {
+				mensaje.textContent = 'No se pudo enviar. Revisa tu conexión e intenta otra vez.';
+			} finally {
+				enviar.disabled = false;
+			}
+		});
+	}
+</script>
+
+<style>
+	.comentarios {
+		margin-top: clamp(2.5rem, 6vw, 4rem);
+		padding-top: clamp(2rem, 4vw, 2.75rem);
+		border-top: 1px solid var(--line);
+	}
+	.comentarios__titulo {
+		font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);
+		letter-spacing: -0.02em;
+	}
+	.comentarios__estado {
+		margin-top: 1rem;
+		color: var(--ink-muted);
+	}
+
+	.comentarios__lista {
+		list-style: none;
+		padding: 0;
+		margin-top: 1.25rem;
+		display: grid;
+		gap: 0.75rem;
+	}
+	.comentarios__lista :global(.comentario) {
+		padding: 1.1rem 1.25rem;
+		border: 1px solid var(--line);
+		border-radius: var(--radius-sm);
+		background: var(--surface);
+	}
+	.comentarios__lista :global(.comentario__cabeza) {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0.25rem 0.75rem;
+	}
+	.comentarios__lista :global(.comentario__cabeza strong) {
+		color: var(--ink);
+		font-weight: 600;
+	}
+	.comentarios__lista :global(.comentario__cabeza time) {
+		font-size: 0.85rem;
+		color: var(--ink-muted);
+	}
+	.comentarios__lista :global(.comentario__texto) {
+		margin-top: 0.4rem;
+		color: var(--ink-body);
+		white-space: pre-line;
+		overflow-wrap: anywhere;
+	}
+
+	.form {
+		margin-top: clamp(1.75rem, 4vw, 2.5rem);
+		max-width: 40rem;
+	}
+	.form__titulo {
+		font-size: clamp(1.15rem, 1.05rem + 0.4vw, 1.35rem);
+		letter-spacing: -0.02em;
+	}
+	.form__nota {
+		margin-top: 0.35rem;
+		font-size: 0.9rem;
+		color: var(--ink-muted);
+	}
+	.form__campo {
+		display: grid;
+		gap: 0.35rem;
+		margin-top: 1.1rem;
+	}
+	.form__campo label {
+		font-weight: 500;
+		color: var(--ink);
+	}
+	.form__campo input,
+	.form__campo textarea {
+		width: 100%;
+		min-height: 48px;
+		padding: 0.7rem 0.9rem;
+		border: 1px solid var(--neutral-400);
+		border-radius: var(--radius-sm);
+		background: var(--surface);
+		color: var(--ink);
+		font: inherit;
+	}
+	.form__campo textarea {
+		resize: vertical;
+		line-height: 1.6;
+	}
+	.form__campo input:focus-visible,
+	.form__campo textarea:focus-visible {
+		outline: 2px solid var(--violet-600);
+		outline-offset: 1px;
+		border-color: var(--violet-600);
+	}
+	.form__trampa {
+		position: absolute;
+		left: -9999px;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+	}
+	.form .button {
+		margin-top: 1.25rem;
+	}
+	.form .button:disabled {
+		opacity: 0.6;
+		cursor: wait;
+	}
+	.form__mensaje {
+		margin-top: 0.75rem;
+		min-height: 1.5em;
+		color: var(--violet-ink);
+		font-weight: 500;
+	}
+</style>
