@@ -93,7 +93,7 @@ const jsonLd = {
 		</header>
 
 		<div class="container post__head">
-			<p class="post__lead">{data.description}</p>
+			{data.mostrarBajada && <p class="post__lead">{data.description}</p>}
 			<p class="post__meta">
 				<span>Por {perfil.nombre}</span>
 				<span aria-hidden="true">·</span>
@@ -147,6 +147,11 @@ const jsonLd = {
 		)
 	}
 </BaseLayout>
+
+<script>
+	import { montarEsquemas } from '../../scripts/esquemas';
+	montarEsquemas();
+</script>
 
 <style>
 	/* ---- Header: same structure as the project pages (DetalleLayout). ---- */
@@ -243,6 +248,10 @@ const jsonLd = {
 		color: var(--ink-muted);
 	}
 
+	.post__meta:first-child {
+		margin-top: 0;
+	}
+
 	.post__body {
 		padding-block: clamp(2rem, 5vw, 3.5rem);
 	}
@@ -297,6 +306,98 @@ const jsonLd = {
 		text-align: center;
 		color: var(--ink-muted);
 	}
+	/* Sources as an accordion (<details class="fuentes"> in the Markdown). */
+	.prose :global(details.fuentes) {
+		margin-top: 2.75rem;
+		padding-inline: clamp(1rem, 2.5vw, 1.5rem);
+		border: 1px solid var(--line);
+		border-radius: var(--radius-sm);
+		background: var(--surface);
+	}
+	.prose :global(details.fuentes summary) {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		padding-block: 1rem;
+		font-family: var(--font-display);
+		font-size: clamp(1.15rem, 1.05rem + 0.4vw, 1.35rem);
+		font-weight: 600;
+		letter-spacing: -0.02em;
+		color: var(--ink);
+		cursor: pointer;
+		list-style: none;
+	}
+	.prose :global(details.fuentes summary::-webkit-details-marker) {
+		display: none;
+	}
+	/* chevron that turns when it opens */
+	.prose :global(details.fuentes summary::after) {
+		content: '';
+		flex: none;
+		width: 0.6rem;
+		height: 0.6rem;
+		margin-right: 0.15rem;
+		border-right: 2px solid var(--violet-accent);
+		border-bottom: 2px solid var(--violet-accent);
+		transform: translateY(-0.15rem) rotate(45deg);
+		transition: transform 0.2s ease;
+	}
+	.prose :global(details.fuentes[open] summary::after) {
+		transform: translateY(0.15rem) rotate(-135deg);
+	}
+	.prose :global(details.fuentes > ul) {
+		margin-top: 0;
+		padding-bottom: 1.25rem;
+		font-size: 0.95rem;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.prose :global(details.fuentes summary::after) {
+			transition: none;
+		}
+	}
+
+	/* Animated diagrams (src/scripts/esquemas.ts draws the canvas inside). */
+	.prose :global(.esquema) {
+		margin-block: 2.5rem;
+	}
+	/* All the same size: small and centred, so they accompany the reading
+	   instead of taking over the screen. */
+	.prose :global(.esquema__lienzo) {
+		display: block;
+		width: 100%;
+		max-width: 34rem;
+		margin-inline: auto;
+		aspect-ratio: 2 / 1;
+	}
+	/* Sísifo's mountain and the net run edge to edge, as wide as the text. */
+	.prose :global(.esquema[data-esquema='sisifo'] .esquema__lienzo) {
+		max-width: none;
+		aspect-ratio: 4 / 1;
+	}
+	.prose :global(.esquema[data-esquema='red'] .esquema__lienzo) {
+		max-width: none;
+		aspect-ratio: 7 / 2;
+	}
+	@media (max-width: 560px) {
+		.prose :global(.esquema__lienzo) {
+			aspect-ratio: 16 / 10;
+		}
+		.prose :global(.esquema[data-esquema='sisifo'] .esquema__lienzo) {
+			aspect-ratio: 5 / 2;
+		}
+		.prose :global(.esquema[data-esquema='red'] .esquema__lienzo) {
+			aspect-ratio: 2 / 1;
+		}
+	}
+	.prose :global(.esquema figcaption) {
+		margin-top: 0.5rem;
+		padding-inline: 0.5rem;
+		font-size: 0.875rem;
+		text-align: center;
+		color: var(--ink-muted);
+	}
+
 	.post__original {
 		margin-top: 2.5rem;
 		padding-top: 1.25rem;

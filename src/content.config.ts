@@ -149,6 +149,8 @@ const palabras = defineCollection({
 			title: z.string(),
 			/** Meta description and summary in the article header. */
 			description: z.string(),
+			/** false: the description stays as meta only and is not shown as a lead under the cover. */
+			mostrarBajada: z.boolean().default(true),
 			date: z.coerce.date(),
 			/** Topic tags: what the article is about, in the words people search for. */
 			tags: z.array(z.string()).min(1),
